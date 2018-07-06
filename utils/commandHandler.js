@@ -13,7 +13,7 @@ module.exports = {
       msg.content = msg.content.split(' ').splice(2, msg.content.split(' ').length).join(' ');
       if (commands[command]) {
         try {
-          commands[command].main(msg, hasArgs);
+          commands[command].main(client, msg, hasArgs);
           console.log(`[INFO] Command ${command} used by: ${msg.author.tag} args: ${msg.content}`);
         } catch (err) {
           console.log(`[ERROR] (Mention) Error in command used by: ${msg.author.tag} Content: ${msg.content} Error: ${err}`);
@@ -27,7 +27,7 @@ module.exports = {
       msg.content = msg.content.replace(`${CONFIG.prefix + command} `, '');
       if (commands[command]) {
         try {
-          commands[command].main(msg, hasArgs);
+          commands[command].main(client, msg, hasArgs);
           console.log(`[INFO] Command ${command} used by: ${msg.author.tag} args: ${msg.content}`);
         } catch (err) {
           console.log(`[ERROR] Error in command used by: ${msg.author.tag} Content: ${msg.content} Error: ${err}`);

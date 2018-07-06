@@ -1,7 +1,8 @@
-const utils = require("../utils/utils.js");
+const utils = require('../utils/utils.js');
+const mainModule = require('../bot.js');
 module.exports = {
-  help: "Evaluate JavaScript",
-  main: (msg, hasArgs) => {
+  help: 'Evaluate JavaScript',
+  main: (client, msg, hasArgs) => {
     if (utils.checkPermission(msg.author, msg, 'owner')) {
       if (hasArgs) {
         const code = msg.content;
