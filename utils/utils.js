@@ -1,5 +1,6 @@
 const CONFIG = require('../config.json');
 const fs = require('fs');
+const mainModule = require('../bot.js');
 
 module.exports = {
   setGame(client, game, type) {
@@ -61,5 +62,18 @@ module.exports = {
         else resolve(true);
       });
     });
+  },
+
+  findModlog(guildID) {
+    return new Promise((resolve, reject) => {
+      mainModule.db.get(`SELECT * FROM servers WHERE id = ${guildID}`, (err, row) => {
+        if (err) reject(err);
+        else resolve(row.modlog);
+      });
+    });
+  },
+
+  writeToModlog(guildID, author, message, auto) {
+    s
   },
 };

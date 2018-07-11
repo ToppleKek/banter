@@ -1,7 +1,9 @@
 const utils = require('../utils/utils.js');
 const mainModule = require('../bot.js');
+const CONFIG = require('../config.json');
 module.exports = {
-  help: 'Evaluate JavaScript',
+  help: 'Evaluate JavaScript (Owner only)',
+  usage: `${CONFIG.prefix}evaljs code`,
   main: (client, msg, hasArgs) => {
     if (utils.checkPermission(msg.author, msg, 'owner')) {
       if (hasArgs) {
@@ -32,8 +34,8 @@ module.exports = {
           }); // end send message
           return;
         } // end catch
-        msg.channel.send(out).catch(error => msg.channel.send(`UNCAUGHT EXCEPTION(Failed promise)\n${error.name}\n${error.message}`));
-      } else utils.sendResponse(msg, `Argument error. Usage: \`${CONFIG.prefix}evaljs some really cool code\``, 'err');
+        msg.channel.send(out).catch(error => msg.channel.send(`Promise rejected, probably an empty message.\n${error.name}\n${error.message}`));
+      } else utils.sendResponse(msg, `Argument error. Usage: \`${module.exports.usage}\``, 'err');
     } else utils.sendResponse(msg, 'Only the owner can use this command.', 'err');
   }
 };

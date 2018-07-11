@@ -9,11 +9,13 @@ const client = new Discord.Client({ autoReconnect: true, disableEveryone: true }
 
 module.exports.db = new sqlite3.Database('./data.db', (err) => {
   if (err) {
-    console.log(err);
+    console.log(`[ERROR] Failed to connect to sqlite3 database! ${err}`);
   } else {
     console.log('Connected to sqlite3 database (data.db)');
   }
 });
+
+module.exports.client = client;
 
 let commands = {};
 
@@ -33,6 +35,7 @@ function loadCommands() {
 commands.help = {};
 commands.help.help = 'Displays this list';
 commands.help.main = (client, msg, hasArgs) => {
+  if (!hasArgs) {
     const cmds = [];
     for (const command in commands) cmds.push(`**${CONFIG.prefix}${command}** - ${commands[command].help}`);
 
@@ -43,6 +46,16 @@ commands.help.main = (client, msg, hasArgs) => {
       timestamp: new Date(),
     };
     msg.channel.send('', { embed }).catch(err => utils.sendResponse(msg, `ERROR: ${err}`, 'err'));
+  } else {
+    try {
+      let usage;
+      if (commands[msg.content].usage) usage = commands[msg.content].usage;
+      else usage = 'No usage info';
+      utils.sendResponse(msg, `**${msg.content}** - ${commands[msg.content].help}\n**Usage:** ${usage}`, 'info');
+    } catch (err) {
+      utils.sendResponse(msg, 'Command not found', 'err');
+    }
+  }
 };
 
 commands.load = {};

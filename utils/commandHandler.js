@@ -3,8 +3,7 @@ const utils = require('./utils.js');
 
 module.exports = {
   checkCommand(client, commands, msg, isMention) {
-    if (!msg.guild) return;
-    if (CONFIG.blacklisted.includes(msg.author.id)) return;
+    if (!msg.guild || msg.author.id === client.user.id || msg.author.bot || CONFIG.blacklisted.includes(msg.author.id)) return;
     if (isMention) {
       const command = msg.content.split(' ')[1];
       let hasArgs = true;
