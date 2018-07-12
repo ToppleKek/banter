@@ -45,14 +45,14 @@ module.exports = {
   },
 
   checkPermission(usr, msg, type) {
-    if (type === 'admin') return msg.guild.member(usr).permissions.has('ADMINISTRATOR');
-    else if (type === 'server') return msg.guild.member(usr).permissions.has('MANAGE_GUILD');
-    else if (type === 'voice') {
-      return !!(msg.guild.member(usr).voiceChannel && msg.guild.member(usr).voiceChannel.id === msg.guild.voiceConnection.channel.id);
-    } else if (type === 'owner') {
-      return usr.id === CONFIG.ownerid;
+    switch (type) {
+      case 'admin':  return msg.guild.member(usr).permissions.has('ADMINISTRATOR');
+      case 'server': return msg.guild.member(usr).permissions.has('MANAGE_GUILD');
+      case 'ban':    return msg.guild.member(usr).permissions.has('BAN_MEMBERS');
+      case 'kick':   return msg.guild.member(usr).permissions.has('KICK_MEMBERS');
+      case 'owner':  return msg.guild.member(usr).id === CONFIG.ownerid;
+      default:       return false;
     }
-    return false;
   },
 
   fileExists(path) {
@@ -64,16 +64,48 @@ module.exports = {
     });
   },
 
-  findModlog(guildID) {
+  getActionChannel(guildID, type) {
     return new Promise((resolve, reject) => {
+      if (!['log', 'modlog', 'starboard'].includes(type)) throw 'Invalid type';
       mainModule.db.get(`SELECT * FROM servers WHERE id = ${guildID}`, (err, row) => {
         if (err) reject(err);
-        else resolve(row.modlog);
+        else if (!row[type]) reject(null);
+        else resolve(row[type]);
       });
     });
   },
 
-  writeToModlog(guildID, author, message, auto) {
-    s
+  writeToModlog(guildID, title, desc, auto, author = 'N/A') {
+    module.exports.getActionChannel(guildID, 'modlog').then(modlog => {
+      let embedAuthor;
+      if (auto) {
+        embedAuthor = {
+          name: 'Automatic Action',
+          iconURL: mainModule.client.user.avatarURL(),
+        };
+      } else {
+        embedAuthor = {
+          name: `Responsible moderator: ${author.tag}`,
+          iconURL: author.avatarURL(),
+        };
+      }
+      mainModule.client.channels.get(modlog).send({
+        embed: {
+          color: 34303,
+          author: embedAuthor,
+          title: title,
+          description: desc,
+          timestamp: new Date(),
+        },
+      }).catch(err => {
+        console.log(`[ERROR] Failed to write to modlog! ${err}`);
+      });
+    }).catch(err => {
+      console.log(`[WARN] Tried to log to modlog, but no modlog was found! It could be disabled... ${err}`);
+    });
   },
+
+  getHighestRolePos(guildID, usr) {
+    return mainModule.client.guilds.get(guildID).member(usr).roles.highest.position;
+  }
 };

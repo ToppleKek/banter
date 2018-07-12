@@ -7,7 +7,8 @@ module.exports = {
   main: (client, msg, hasArgs) => {
     if (utils.checkPermission(msg.author, msg, 'owner')) {
       mainModule.db.serialize(() => {
-        mainModule.db.run(`INSERT INTO servers VALUES('${msg.guild.name}', '${msg.guild.id}', 'NOT_SET', 'NOT_SET', 'NOT_SET')`, (err) => {
+        // TODO: something is very wrong here, i cant update the db with the auto increment row_id
+        mainModule.db.run(`INSERT INTO servers VALUES('${msg.guild.name.replace("'", '')}', '${msg.guild.id}', NULL, NULL, NULL)`, (err) => {
           if (err) return console.log(err);
         });
       });

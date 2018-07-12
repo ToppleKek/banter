@@ -5,8 +5,6 @@ const utils = require('./utils/utils.js');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 
-const client = new Discord.Client({ autoReconnect: true, disableEveryone: true });
-
 module.exports.db = new sqlite3.Database('./data.db', (err) => {
   if (err) {
     console.log(`[ERROR] Failed to connect to sqlite3 database! ${err}`);
@@ -15,7 +13,7 @@ module.exports.db = new sqlite3.Database('./data.db', (err) => {
   }
 });
 
-module.exports.client = client;
+module.exports.client = new Discord.Client({ autoReconnect: true, disableEveryone: true });
 
 let commands = {};
 
@@ -123,27 +121,27 @@ commands.reload.main = (client, msg, hasArgs) => {
 };
 // -- END COMMANDS --
 // -- EVENTS --
-client.on('ready', () => {
+module.exports.client.on('ready', () => {
   loadCommands();
-  console.log(`Ready. \nClient: ${client.user.tag}\nOwner: ${client.users.get(CONFIG.ownerid).tag}\nServers: ${client.guilds.array().length}`);
+  console.log(`Ready. \nClient: ${module.exports.client.user.tag}\nOwner: ${module.exports.client.users.get(CONFIG.ownerid).tag}\nServers: ${module.exports.client.guilds.array().length}`);
 });
 
-client.on('message', msg => {
-  if (msg.content.startsWith(`<@${client.user.id}>`) || msg.content.startsWith(`<@!${client.user.id}>`)) {
-    commandHandler.checkCommand(client, commands, msg, true);
+module.exports.client.on('message', msg => {
+  if (msg.content.startsWith(`<@${module.exports.client.user.id}>`) || msg.content.startsWith(`<@!${module.exports.client.user.id}>`)) {
+    commandHandler.checkCommand(module.exports.client, commands, msg, true);
   } else if (msg.content.startsWith(CONFIG.prefix)) {
-    commandHandler.checkCommand(client, commands, msg, false);
+    commandHandler.checkCommand(module.exports.client, commands, msg, false);
   }
 });
 
-client.on('error', (err) => {
+module.exports.client.on('error', (err) => {
   console.log('————— ERROR —————');
   console.log(err);
   console.log('——— END ERROR ———');
 });
 
-client.on('disconnected', () => {
+module.exports.client.on('disconnected', () => {
   console.log('[WARN] The client has disconnected');
 });
 // -- END EVENTS --
-client.login(CONFIG.token);
+module.exports.client.login(CONFIG.token);
