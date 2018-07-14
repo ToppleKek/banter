@@ -4,6 +4,9 @@ const utils = require('./utils.js');
 module.exports = {
   checkCommand(client, commands, msg, isMention) {
     if (!msg.guild || msg.author.id === client.user.id || msg.author.bot || CONFIG.blacklisted.includes(msg.author.id)) return;
+    if (!msg.guild.member(client.user).hasPermission('ADMINISTRATOR')) {
+      return utils.sendResponse(msg, 'This bot being a moderation bot requires the administrator permission to function. Please grant it an administrative role.', 'err');
+    }
     if (isMention) {
       const command = msg.content.split(' ')[1];
       let hasArgs = true;

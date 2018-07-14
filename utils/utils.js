@@ -46,12 +46,18 @@ module.exports = {
 
   checkPermission(usr, msg, type) {
     switch (type) {
-      case 'admin':  return msg.guild.member(usr).permissions.has('ADMINISTRATOR');
-      case 'server': return msg.guild.member(usr).permissions.has('MANAGE_GUILD');
-      case 'ban':    return msg.guild.member(usr).permissions.has('BAN_MEMBERS');
-      case 'kick':   return msg.guild.member(usr).permissions.has('KICK_MEMBERS');
-      case 'owner':  return msg.guild.member(usr).id === CONFIG.ownerid;
-      default:       return false;
+      case 'admin':
+        return msg.guild.member(usr).permissions.has('ADMINISTRATOR');
+      case 'server':
+        return msg.guild.member(usr).permissions.has('MANAGE_GUILD');
+      case 'ban':
+        return msg.guild.member(usr).permissions.has('BAN_MEMBERS');
+      case 'kick':
+        return msg.guild.member(usr).permissions.has('KICK_MEMBERS');
+      case 'owner':
+        return msg.guild.member(usr).id === CONFIG.ownerid;
+      default:
+        return false;
     }
   },
 
@@ -107,5 +113,42 @@ module.exports = {
 
   getHighestRolePos(guildID, usr) {
     return mainModule.client.guilds.get(guildID).member(usr).roles.highest.position;
-  }
+  },
+
+  timedMute(user, guild, secs, auto, author, reason = 'No reason specified') {
+    mainModule.db.run(`INSERT INTO muted VALUES(NULL, "${user}", "${guild}")`, err => {
+      const guildObj = mainModule.client.guilds.get(guild);
+      if (err) return console.log(err);
+      else {
+        guildObj.member(user).roles.add(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute')
+            .then(member => {
+              console.log(`[INFO] Timed mute started for user ${user} on guild ${guild} for ${secs} seconds`);
+              if (auto) {
+                module.exports.writeToModlog(guild, 'Automatic action', `User ${mainModule.client.users.get(user).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, true);
+              } else {
+                module.exports.writeToModlog(guild, `Manual action`, `User ${mainModule.client.users.get(user).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, false, author);
+              }
+              setTimeout(() => {
+                mainModule.db.run(`DELETE FROM muted WHERE user_id = "${user}" AND guild_id = "${guild}"`);
+                if (mainModule.client.guilds.get(guild) && mainModule.client.guilds.get(guild).member(user) && guildObj.member(user).roles.find(role => role.name === 'Muted')) {
+                  guildObj.member(user).roles.remove(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute end')
+                      .catch(err => {
+                        console.log(`[ERROR] Rejected promise in guild ${guild} from timed mute ending: ${err}`);
+                      });
+                  if (auto) {
+                    module.exports.writeToModlog(guild, 'Automatic action', `User ${mainModule.client.users.get(user).tag} UNMUTED`, true);
+                  } else {
+                    module.exports.writeToModlog(guild, `Automatic action`, `User ${mainModule.client.users.get(user).tag} UNMUTED`, false, author);
+                  }
+                } else {
+                  console.log('[WARN] Somethings not right here, user left? Timed mute over');
+                }
+              }, secs * 1000)
+            })
+            .catch(err => {
+              console.log(`[ERROR] Rejected promise in guild ${guild} from timed mute: ${err}`);
+            })
+      }
+    })
+  },
 };

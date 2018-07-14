@@ -31,12 +31,12 @@ module.exports = {
         else {
           target.createDM().then(chan => {
             chan.send({
-            embed:{
-              color: 1571692,
-              title: `Get heckin naenaed from ${msg.guild.name}`,
-              description: `They banned you for \`${reason}\``,
-              timestamp: new Date(),
-            }
+              embed: {
+                color: 1571692,
+                title: `Get heckin naenaed from ${msg.guild.name}`,
+                description: `They banned you for \`${reason}\``,
+                timestamp: new Date(),
+              }
             }).catch(err => {
               utils.sendResponse(msg, `Failed to DM ${targetUsr.tag} with error ${err}, trying to ban anyway`, 'info');
             });
@@ -44,27 +44,27 @@ module.exports = {
             utils.sendResponse(msg, `Failed to DM ${targetUsr.tag} with error ${err}, trying to ban anyway`, 'info');
           });
 
-          target.ban({ days: 0, reason: reason})
-            .then(member => {
-              utils.writeToModlog(msg.guild.id, `User ${targetUsr.tag} naenaed`, `${msg.author.tag} naenaed ${targetUsr.tag} for \`${reason.replace('`', '')}\``, false, msg.author);
-              msg.channel.send({
-                embed: {
-                  color: 1571692,
-                  title: `${targetUsr.tag} JUST GOT NAENAED`,
-                  description: 'GET FRICKED KIDDO',
-                  thumbnail: {
-                    url: 'https://images-ext-2.discordapp.net/external/hHfWlFdQbHi0JXTdaed_3iGwULt6vXXLohlGFEe56oo/https/cdn.discordapp.com/attachments/242345022719000595/352625339891056640/lmao.gif',
-                  },
-                  timestamp: new Date(),
-                }
+          target.ban({days: 0, reason: reason})
+              .then(member => {
+                utils.writeToModlog(msg.guild.id, `Manual action`, `${msg.author.tag} naenaed ${targetUsr.tag} for \`${reason.replace('`', '')}\``, false, msg.author);
+                msg.channel.send({
+                  embed: {
+                    color: 1571692,
+                    title: `${targetUsr.tag} JUST GOT NAENAED`,
+                    description: 'GET FRICKED KIDDO',
+                    thumbnail: {
+                      url: 'https://images-ext-2.discordapp.net/external/hHfWlFdQbHi0JXTdaed_3iGwULt6vXXLohlGFEe56oo/https/cdn.discordapp.com/attachments/242345022719000595/352625339891056640/lmao.gif',
+                    },
+                    timestamp: new Date(),
+                  }
+                })
               })
-            })
-            .catch(err => {
-              utils.sendResponse(msg, `Failed to naenae. Error: ${err}`, 'err');
-            });
+              .catch(err => {
+                utils.sendResponse(msg, `Failed to naenae. Error: ${err}`, 'err');
+              });
         }
       }
-       else {
+      else {
         utils.sendResponse(msg, `You must provide a mention or a userID to naenae!\nUsage: ${module.exports.usage}`, 'err');
       }
     } else {

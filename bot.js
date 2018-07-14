@@ -2,6 +2,7 @@ const CONFIG = require('./config.json');
 const Discord = require('discord.js');
 const commandHandler = require('./utils/commandHandler.js');
 const utils = require('./utils/utils.js');
+const guildMemberAddEventHandler = require('./events/guildMemberAdd.js');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 
@@ -23,7 +24,7 @@ function loadCommands() {
   for (let file of files) {
     if (file.endsWith('.js')) {
       commands[file.slice(0, -3)] = require(`./commands/${file}`);
-      console.log('Loaded ' + file);
+      console.log(`Loaded ${file}`);
     }
   }
   console.log('———— All Commands Loaded! ————');
@@ -32,6 +33,7 @@ function loadCommands() {
 // -- COMMANDS --
 commands.help = {};
 commands.help.help = 'Displays this list';
+commands.help.usage = `${CONFIG.prefix}help <command>`;
 commands.help.main = (client, msg, hasArgs) => {
   if (!hasArgs) {
     const cmds = [];
@@ -61,8 +63,7 @@ commands.load.help = 'Load a command from ./commands/';
 commands.load.main = (client, msg, hasArgs) => {
   if (utils.checkPermission(msg.author, msg, 'owner')) {
     if (!hasArgs) {
-      utils.sendResponse(msg, 'Missing arguments. Provide a command to unload.', 'err');
-      return;
+      return utils.sendResponse(msg, 'Missing arguments. Provide a command to unload.', 'err');
     }
     try {
       delete commands[msg.content];
@@ -79,11 +80,14 @@ commands.load.main = (client, msg, hasArgs) => {
 
 commands.unload = {};
 commands.unload.help = 'Unload a loaded command';
-commands.unload.main = (client, msg, hasArgs) => {
+commands.unload.main = async (client, msg, hasArgs) => {
   if (utils.checkPermission(msg.author, msg, 'owner')) {
     if (!hasArgs) {
-      utils.sendResponse(msg, 'Missing arguments. Provide a command to unload.', 'err');
-      return;
+      return utils.sendResponse(msg, 'Missing arguments. Provide a command to unload.', 'err');
+    }
+    const fileExists = await utils.fileExists(`./commands/${msg.content}.js`);
+    if (!fileExists) {
+      return utils.sendResponse(msg, `File \`./commands/${msg.content}.js\` not found!`, 'err');
     }
     try {
       delete commands[msg.content];
@@ -103,8 +107,7 @@ commands.reload.help = 'Reloads a loaded command';
 commands.reload.main = (client, msg, hasArgs) => {
   if (utils.checkPermission(msg.author, msg, 'owner')) {
     if (!hasArgs) {
-      utils.sendResponse(msg, 'Missing arguments. Provide a command to unload.', 'err');
-      return;
+      return utils.sendResponse(msg, 'Missing arguments. Provide a command to unload.', 'err');
     }
     try {
       delete commands[msg.content];
@@ -132,6 +135,11 @@ module.exports.client.on('message', msg => {
   } else if (msg.content.startsWith(CONFIG.prefix)) {
     commandHandler.checkCommand(module.exports.client, commands, msg, false);
   }
+});
+
+module.exports.client.on('guildMemberAdd', member => {
+  console.log('[INFO] guildMemberAddEvent');
+  guildMemberAddEventHandler.event(module.exports.client, module.exports.db, member);
 });
 
 module.exports.client.on('error', (err) => {
