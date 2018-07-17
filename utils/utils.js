@@ -75,7 +75,7 @@ module.exports = {
       if (!['log', 'modlog', 'starboard'].includes(type)) throw 'Invalid type';
       mainModule.db.get(`SELECT * FROM servers WHERE id = ${guildID}`, (err, row) => {
         if (err) reject(err);
-        else if (!row[type]) reject(null);
+        else if (!row || !row[type]) reject(null);
         else resolve(row[type]);
       });
     });
@@ -121,34 +121,45 @@ module.exports = {
       if (err) return console.log(err);
       else {
         guildObj.member(user).roles.add(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute')
-            .then(member => {
-              console.log(`[INFO] Timed mute started for user ${user} on guild ${guild} for ${secs} seconds`);
-              if (auto) {
-                module.exports.writeToModlog(guild, 'Automatic action', `User ${mainModule.client.users.get(user).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, true);
-              } else {
-                module.exports.writeToModlog(guild, `Manual action`, `User ${mainModule.client.users.get(user).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, false, author);
-              }
-              setTimeout(() => {
-                mainModule.db.run(`DELETE FROM muted WHERE user_id = "${user}" AND guild_id = "${guild}"`);
-                if (mainModule.client.guilds.get(guild) && mainModule.client.guilds.get(guild).member(user) && guildObj.member(user).roles.find(role => role.name === 'Muted')) {
-                  guildObj.member(user).roles.remove(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute end')
-                      .catch(err => {
-                        console.log(`[ERROR] Rejected promise in guild ${guild} from timed mute ending: ${err}`);
-                      });
-                  if (auto) {
-                    module.exports.writeToModlog(guild, 'Automatic action', `User ${mainModule.client.users.get(user).tag} UNMUTED`, true);
-                  } else {
-                    module.exports.writeToModlog(guild, `Automatic action`, `User ${mainModule.client.users.get(user).tag} UNMUTED`, false, author);
-                  }
+          .then(member => {
+            console.log(`[INFO] Timed mute started for user ${user} on guild ${guild} for ${secs} seconds`);
+            if (auto) {
+              module.exports.writeToModlog(guild, 'Automatic action', `User ${mainModule.client.users.get(user).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, true);
+            } else {
+              module.exports.writeToModlog(guild, `Manual action`, `User ${mainModule.client.users.get(user).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, false, author);
+            }
+            setTimeout(() => {
+              mainModule.db.run(`DELETE FROM muted WHERE user_id = "${user}" AND guild_id = "${guild}"`);
+              if (mainModule.client.guilds.get(guild) && mainModule.client.guilds.get(guild).member(user) && guildObj.member(user).roles.find(role => role.name === 'Muted')) {
+                guildObj.member(user).roles.remove(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute end')
+                  .catch(err => {
+                    console.log(`[ERROR] Rejected promise in guild ${guild} from timed mute ending: ${err}`);
+                  });
+                if (auto) {
+                  module.exports.writeToModlog(guild, 'Automatic action', `User ${mainModule.client.users.get(user).tag} UNMUTED`, true);
                 } else {
-                  console.log('[WARN] Somethings not right here, user left? Timed mute over');
+                  module.exports.writeToModlog(guild, `Automatic action`, `User ${mainModule.client.users.get(user).tag} UNMUTED`, false, author);
                 }
-              }, secs * 1000)
-            })
-            .catch(err => {
-              console.log(`[ERROR] Rejected promise in guild ${guild} from timed mute: ${err}`);
-            })
+              } else {
+                console.log('[WARN] Somethings not right here, user left? Timed mute over');
+              }
+            }, secs * 1000)
+          })
+          .catch(err => {
+            console.log(`[ERROR] Rejected promise in guild ${guild} from timed mute: ${err}`);
+          })
       }
     })
   },
+
+  getMutualGuilds(user) {
+    const clientGuilds = mainModule.client.guilds.array();
+    const mutualGuilds = [];
+
+    for (let i = 0; i < clientGuilds.length; i += 1) {
+      if (clientGuilds[i].member(user)) mutualGuilds.push(clientGuilds[i]);
+    }
+
+    return mutualGuilds;
+  }
 };

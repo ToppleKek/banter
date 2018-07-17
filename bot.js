@@ -3,6 +3,7 @@ const Discord = require('discord.js');
 const commandHandler = require('./utils/commandHandler.js');
 const utils = require('./utils/utils.js');
 const guildMemberAddEventHandler = require('./events/guildMemberAdd.js');
+const loggingEventHandler = require('./events/loggingEventHandler.js');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 
@@ -140,7 +141,46 @@ module.exports.client.on('message', msg => {
 module.exports.client.on('guildMemberAdd', member => {
   console.log('[INFO] guildMemberAddEvent');
   guildMemberAddEventHandler.event(module.exports.client, module.exports.db, member);
+  loggingEventHandler.guildMemberAdd(member);
 });
+
+module.exports.client.on('guildMemberRemove', member => {
+  loggingEventHandler.guildMemberRemove(member);
+});
+
+module.exports.client.on('channelCreate', channel => {
+  loggingEventHandler.channelCreate(channel);
+});
+
+module.exports.client.on('channelDelete', channel => {
+  loggingEventHandler.channelDelete(channel);
+});
+
+module.exports.client.on('guildMemberUpdate', (oldMember, newMember) => {
+  loggingEventHandler.guildMemberUpdate(oldMember, newMember);
+});
+
+module.exports.client.on('messageDelete', message => {
+  loggingEventHandler.messageDelete(message);
+});
+
+module.exports.client.on('messageUpdate', (oldMessage, newMessage) => {
+  loggingEventHandler.messageUpdate(oldMessage, newMessage);
+});
+
+module.exports.client.on('userUpdate', (oldUser, newUser) => {
+  loggingEventHandler.userUpdate(oldUser, newUser);
+  module.exports.client.guilds.get('259768414770298882').channels.get('421043912296235009').send(`DEBUG: avatar change for user ${newUser.tag}\nOLD_AVATAR: ${oldUser.avatarURL()}\nNEW_AVATAR: ${newUser.avatarURL()}\nMUTUAL_GUILDS:\n${utils.getMutualGuilds(newUser).join('\n')}`);
+});
+
+module.exports.client.on('channelUpdate', (oldChannel, newChannel) => {
+  loggingEventHandler.channelUpdate(oldChannel, newChannel);
+});
+
+module.exports.client.on('roleCreate', role => loggingEventHandler.roleCreate(role));
+module.exports.client.on('roleDelete', role => loggingEventHandler.roleDelete(role));
+module.exports.client.on('guildBanAdd', (guild, user) => loggingEventHandler.guildBanAdd(guild, user));
+module.exports.client.on('guildBanRemove', (guild, user) => loggingEventHandler.guildBanRemove(guild, user));
 
 module.exports.client.on('error', (err) => {
   console.log('————— ERROR —————');

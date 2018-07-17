@@ -17,6 +17,10 @@ module.exports = {
           return;
         }
 
+        if (target.roles.find(role => role.name === 'Muted')) {
+          return utils.sendResponse(msg, 'This user is already muted', 'err');
+        }
+
         const time = args[1];
         args.splice(0, 2);
         let reason = args.join(' ');
