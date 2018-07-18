@@ -30,6 +30,8 @@ module.exports = {
           return utils.sendResponse(msg, `Invalid time\nUsage: ${module.exports.usage}`, 'err');
         } else if (Number.parseInt(time, 10) < 1) {
           return utils.sendResponse(msg, `Time must be greater than 1 minute\nUsage: ${module.exports.usage}`, 'err');
+        } else if (Number.parseInt(time, 10) > 1000) {
+          return utils.sendResponse(msg, `Don't you think that might be too long? Maximum time is 1000 minutes\nUsage: ${module.exports.usage}`, 'err');
         }
 
         utils.timedMute(target.id, msg.guild.id, time * 60, false, msg.author, reason);

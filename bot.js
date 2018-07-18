@@ -181,6 +181,7 @@ module.exports.client.on('roleCreate', role => loggingEventHandler.roleCreate(ro
 module.exports.client.on('roleDelete', role => loggingEventHandler.roleDelete(role));
 module.exports.client.on('guildBanAdd', (guild, user) => loggingEventHandler.guildBanAdd(guild, user));
 module.exports.client.on('guildBanRemove', (guild, user) => loggingEventHandler.guildBanRemove(guild, user));
+module.exports.client.on('messageDeleteBulk', messages => loggingEventHandler.messageDeleteBulk(messages));
 
 module.exports.client.on('error', (err) => {
   console.log('————— ERROR —————');
