@@ -104,11 +104,8 @@ module.exports = {
     let title;
     let change;
     if (oldMember.nickname !== newMember.nickname) {
-      let oldNick, newNick;
-      if (!oldMember.nickname) oldNick = '***No nickname***';
-      if (!newMember.nickname) newNick = '***No nickname***';
       title = 'Nickname updated';
-      change = `\`${oldNick}\` --> \`${newNick}\``;
+      change = `\`${oldMember.nickname ? oldMember.nickname : '***No nickname***'}\` --> \`${newMember.nickname ? newMember.nickname : '***No nickname***'}\``;
     }
     else if (oldMember.roles.array().length !== newMember.roles.array().length) {
       title = 'Roles updated';
@@ -200,11 +197,12 @@ module.exports = {
       const msgArray = messages.array();
       const content = [];
 
+      content.push(`***Bulk message delete log at ${new Date().toUTCString()} on guild ${messages.first().guild.name}. (All quotes have been removed)***`);
       for (let i = msgArray.length - 1; i > 0; i -= 1) {
-        content.push(`[${msgArray[i].createdTimestamp}] ${msgArray[i].author.tag} - ${msgArray[i].content}`);
+        content.push(`[${new Date(msgArray[i].createdTimestamp).toUTCString()}] ${msgArray[i].author.tag} - ${msgArray[i].content}`);
       }
 
-      exec(`echo "${content.join('\n')}" | haste`, (err, stdout, stderr) => {
+      exec(`echo "${content.join('\n').replace('"', '')}" | haste`, (err, stdout, stderr) => {
         if (err) return console.log(err);
         else if (stderr) return console.log(stderr);
         else {
@@ -254,11 +252,6 @@ module.exports = {
     const fields = [];
     let embed;
     if (oldUser.tag !== newUser.tag && oldUser.avatarURL() !== newUser.avatarURL()) {
-      let newAvi, oldAvi;
-      if (!newUser.avatarURL()) newAvi = 'https://cdn.discordapp.com/attachments/328763359535169547/468903512273715200/damn.png';
-      else newAvi = newUser.avatarURL();
-      if (!oldUser.avatarURL()) oldAvi = 'https://cdn.discordapp.com/attachments/328763359535169547/468903512273715200/damn.png';
-      else oldAvi = oldUser.avatarURL();
       embed = {
         embed: {
           color: 1571692,
@@ -269,10 +262,10 @@ module.exports = {
             value: `${oldUser.tag} --> ${newUser.tag}`,
           }],
           thumbnail: {
-            url: oldAvi,
+            url: (oldUser.avatarURL() ? oldUser.avatarURL() : 'https://cdn.discordapp.com/attachments/328763359535169547/468903512273715200/damn.png'),
           },
           image: {
-            url: newAvi,
+            url: (newUser.avatarURL() ? newUser.avatarURL() : 'https://cdn.discordapp.com/attachments/328763359535169547/468903512273715200/damn.png'),
           },
           timestamp: new Date(),
         },
@@ -290,21 +283,16 @@ module.exports = {
         },
       };
     } else if (oldUser.avatarURL() !== newUser.avatarURL()) {
-      let newAvi, oldAvi;
-      if (!newUser.avatarURL()) newAvi = 'https://cdn.discordapp.com/attachments/328763359535169547/468903512273715200/damn.png';
-      else newAvi = newUser.avatarURL();
-      if (!oldUser.avatarURL()) oldAvi = 'https://cdn.discordapp.com/attachments/328763359535169547/468903512273715200/damn.png';
-      else oldAvi = oldUser.avatarURL();
       embed = {
         embed: {
           color: 1571692,
           title: 'User updated',
           description: `**${newUser.tag}** changed their avatar (Thumbnail is old avatar, image is new avatar)`,
           thumbnail: {
-            url: oldAvi,
+            url: (oldUser.avatarURL() ? oldUser.avatarURL() : 'https://cdn.discordapp.com/attachments/328763359535169547/468903512273715200/damn.png'),
           },
           image: {
-            url: newAvi,
+            url: (newUser.avatarURL() ? newUser.avatarURL() : 'https://cdn.discordapp.com/attachments/328763359535169547/468903512273715200/damn.png'),
           },
           timestamp: new Date(),
         },

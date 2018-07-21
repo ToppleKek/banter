@@ -27,6 +27,7 @@ module.exports = {
               utils.sendResponse(msg, `There was an error updating your log! The database may be configured incorrectly! Error: \`\`\`${err}\`\`\``, 'err');
             } else {
               utils.sendResponse(msg, `Set ${msg.guild.name}'s log to ${msg.guild.channels.get(channel).name}`, 'success');
+              utils.writeToModlog(msg.guild.id, 'Manual action', `This servers log was set to #${msg.guild.channels.get(channel).name}`, false, msg.author);
             }
           });
           break;
@@ -36,6 +37,7 @@ module.exports = {
               utils.sendResponse(msg, `There was an error updating your modlog! The database may be configured incorrectly! Error: \`\`\`${err}\`\`\``, 'err');
             } else {
               utils.sendResponse(msg, `Set ${msg.guild.name}'s modlog to ${msg.guild.channels.get(channel).name}`, 'success');
+              utils.writeToModlog(msg.guild.id, 'Manual action', `This servers modlog was set to #${msg.guild.channels.get(channel).name}`, false, msg.author);
             }
           });
           break;
@@ -45,6 +47,7 @@ module.exports = {
               utils.sendResponse(msg, `There was an error updating your starboard! The database may be configured incorrectly! Error: \`\`\`${err}\`\`\``, 'err');
             } else {
               utils.sendResponse(msg, `Set ${msg.guild.name}'s starboard to ${msg.guild.channels.get(channel).name}`, 'success');
+              utils.writeToModlog(msg.guild.id, 'Manual action', `This servers starboard was set to #${msg.guild.channels.get(channel).name}`, false, msg.author);
             }
           });
           break;

@@ -12,14 +12,13 @@ module.exports = {
 
         if (msg.mentions.users.first()) target = msg.guild.member(msg.mentions.users.first());
         else if (client.users.get(userArg)) target = msg.guild.member(client.users.get(userArg));
-        else {
-          return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
-        }
+        else return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
 
         args.shift();
         const roleName = args.join(' ');
 
         if (!msg.guild.roles.find(role => role.name === roleName)) return utils.sendResponse(msg, `Role not found: ${roleName}`, 'err');
+        if (msg.guild.roles.find(role => role.name === roleName).position >= msg.guild.member(msg.author).roles.highest.position) return utils.sendResponse(msg, 'That role is higher or equal to your highest role', 'err');
 
         if (target.roles.find(role => role.name === roleName)) {
           target.roles.remove(msg.guild.roles.find(role => role.name === roleName))

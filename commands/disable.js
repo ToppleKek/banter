@@ -23,6 +23,7 @@ module.exports = {
                   utils.sendResponse(msg, `There was an error updating your log! The database may be configured incorrectly! Error: \`\`\`${err}\`\`\``, 'err');
                 } else {
                   utils.sendResponse(msg, `Disabled logging on this server`, 'success');
+                  utils.writeToModlog(msg.guild.id, 'Manual action', `Logging has been disabled on this server`, false, msg.author);
                 }
               });
               break;
@@ -36,6 +37,7 @@ module.exports = {
                   utils.sendResponse(msg, `There was an error updating your modlog! The database may be configured incorrectly! Error: \`\`\`${err}\`\`\``, 'err');
                 } else {
                   utils.sendResponse(msg, `Disabled logging of moderator actions on this server`, 'success');
+                  utils.writeToModlog(msg.guild.id, 'Manual action', `Logging of moderator actions has been disabled on this server`, false, msg.author);
                 }
               });
               break;
@@ -49,6 +51,7 @@ module.exports = {
                   utils.sendResponse(msg, `There was an error updating your starboard! The database may be configured incorrectly! Error: \`\`\`${err}\`\`\``, 'err');
                 } else {
                   utils.sendResponse(msg, `Disabled starboard on this server`, 'success');
+                  utils.writeToModlog(msg.guild.id, 'Manual action', `The starboard has been disabled on this server`, false, msg.author);
                 }
               });
               break;
