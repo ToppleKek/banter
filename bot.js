@@ -5,6 +5,7 @@ const utils = require('./utils/utils.js');
 const guildMemberAddEventHandler = require('./events/guildMemberAdd.js');
 const loggingEventHandler = require('./events/loggingEventHandler.js');
 const guildConfigEventHandler = require('./events/guildConfigEventHandler.js');
+const blacklistEventHandler = require('./events/blacklistEventHandler.js');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 
@@ -132,6 +133,7 @@ module.exports.client.on('ready', () => {
 });
 
 module.exports.client.on('message', msg => {
+  blacklistEventHandler.message(null, msg);
   if (msg.content.startsWith(`<@${module.exports.client.user.id}>`) || msg.content.startsWith(`<@!${module.exports.client.user.id}>`)) {
     commandHandler.checkCommand(module.exports.client, commands, msg, true);
   } else if (msg.content.startsWith(CONFIG.prefix)) {
@@ -139,6 +141,7 @@ module.exports.client.on('message', msg => {
   }
 });
 
+module.exports.client.on('messageUpdate', (oldMessage, newMessage) => blacklistEventHandler.message(oldMessage, newMessage));
 module.exports.client.on('guildMemberAdd', member => {
   console.log('[INFO] guildMemberAddEvent');
   guildMemberAddEventHandler.event(module.exports.client, module.exports.db, member);
@@ -163,6 +166,8 @@ module.exports.client.on('guildBanAdd',       (guild, user)            => loggin
 module.exports.client.on('guildBanRemove',    (guild, user)            => loggingEventHandler.guildBanRemove(guild, user));
 module.exports.client.on('messageDeleteBulk', messages                 => loggingEventHandler.messageDeleteBulk(messages));
 // -- END LOGGING --
+
+//module.exports.client.on('presenceUpdate', (oldMember, newMember) => loggingEventHandler.presenceUpdate(oldMember, newMember));
 
 module.exports.client.on('error', (err) => {
   console.log('————— ERROR —————');

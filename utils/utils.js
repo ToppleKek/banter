@@ -115,30 +115,30 @@ module.exports = {
     return mainModule.client.guilds.get(guildID).member(usr).roles.highest.position;
   },
 
-  timedMute(user, guild, secs, auto, author, reason = 'No reason specified') {
-    mainModule.db.run(`INSERT INTO muted VALUES(NULL, "${user}", "${guild}")`, err => {
-      const guildObj = mainModule.client.guilds.get(guild);
+  timedMute(userID, guildID, secs, auto, author, reason = 'No reason specified') {
+    mainModule.db.run(`INSERT INTO muted VALUES(NULL, "${userID}", "${guildID}")`, err => {
+      const guildObj = mainModule.client.guilds.get(guildID);
       if (err) return console.log(err);
       else {
-        guildObj.member(user).roles.add(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute')
+        guildObj.member(userID).roles.add(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute')
           .then(member => {
-            console.log(`[INFO] Timed mute started for user ${user} on guild ${guild} for ${secs} seconds`);
+            console.log(`[INFO] Timed mute started for user ${userID} on guild ${guildID} for ${secs} seconds`);
             if (auto) {
-              module.exports.writeToModlog(guild, 'Automatic action', `User ${mainModule.client.users.get(user).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, true);
+              module.exports.writeToModlog(guildID, 'Automatic action', `User ${mainModule.client.users.get(userID).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, true);
             } else {
-              module.exports.writeToModlog(guild, `Manual action`, `User ${mainModule.client.users.get(user).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, false, author);
+              module.exports.writeToModlog(guildID, `Manual action`, `User ${mainModule.client.users.get(userID).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, false, author);
             }
             setTimeout(() => {
-              mainModule.db.run(`DELETE FROM muted WHERE user_id = "${user}" AND guild_id = "${guild}"`);
-              if (mainModule.client.guilds.get(guild) && mainModule.client.guilds.get(guild).member(user) && guildObj.member(user).roles.find(role => role.name === 'Muted')) {
-                guildObj.member(user).roles.remove(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute end')
+              mainModule.db.run(`DELETE FROM muted WHERE user_id = "${userID}" AND guild_id = "${guildID}"`);
+              if (mainModule.client.guilds.get(guildID) && mainModule.client.guilds.get(guildID).member(userID) && guildObj.member(userID).roles.find(role => role.name === 'Muted')) {
+                guildObj.member(userID).roles.remove(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute end')
                   .catch(err => {
-                    console.log(`[ERROR] Rejected promise in guild ${guild} from timed mute ending: ${err}`);
+                    console.log(`[ERROR] Rejected promise in guild ${guildID} from timed mute ending: ${err}`);
                   });
                 if (auto) {
-                  module.exports.writeToModlog(guild, 'Automatic action', `User ${mainModule.client.users.get(user).tag} UNMUTED`, true);
+                  module.exports.writeToModlog(guildID, 'Automatic action', `User ${mainModule.client.users.get(userID).tag} UNMUTED`, true);
                 } else {
-                  module.exports.writeToModlog(guild, `Automatic action`, `User ${mainModule.client.users.get(user).tag} UNMUTED`, false, author);
+                  module.exports.writeToModlog(guildID, `Automatic action`, `User ${mainModule.client.users.get(userID).tag} UNMUTED`, false, author);
                 }
               } else {
                 console.log('[WARN] Somethings not right here, user left? Timed mute over');
@@ -146,7 +146,7 @@ module.exports = {
             }, secs * 1000)
           })
           .catch(err => {
-            console.log(`[ERROR] Rejected promise in guild ${guild} from timed mute: ${err}`);
+            console.log(`[ERROR] Rejected promise in guild ${guildID} from timed mute: ${err}`);
           })
       }
     })
@@ -161,5 +161,12 @@ module.exports = {
     }
 
     return mutualGuilds;
+  },
+
+  regexIndexOf(arr, regex) {
+    for (let i = 0; i < arr.length; i += 1) {
+      if (arr[i].toString().match(regex)) return i;
+    }
+    return -1;
   }
 };

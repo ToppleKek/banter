@@ -2,27 +2,42 @@ const utils = require('../utils/utils.js');
 const CONFIG = require('../config.json');
 module.exports = {
   help: 'Mute a user',
-  usage: `${CONFIG.prefix}mute @someone 5 go think about what youve done for 5 minutes`,
+  usage: `Note: you may use your own syntax for this command as long as the time number is next to the mention. ${CONFIG.prefix}mute @someone 5 go think about what you've done for 5 minutes`,
   main: (client, msg, hasArgs) => {
     if (utils.checkPermission(msg.author, msg, 'admin')) {
       if (hasArgs) {
         const args = msg.content.split(' ');
-        const userArg = args[0];
         let target;
 
         if (msg.mentions.users.first()) target = msg.guild.member(msg.mentions.users.first());
-        else if (client.users.get(userArg)) target = msg.guild.member(client.users.get(userArg));
-        else {
-          utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
-          return;
-        }
+        else return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
+
+        let mentionIndex = utils.regexIndexOf(args, /<@!?(1|\d{17,19})>/);
+        let time;
+
+        if (!Number.isNaN(Number.parseInt(args[mentionIndex - 1], 10)) && Number.isNaN(Number.parseInt(args[mentionIndex + 1], 10)) || !args[mentionIndex + 1]) {
+          time = args[mentionIndex - 1];
+        } else if (!Number.isNaN(Number.parseInt(args[mentionIndex + 1], 10)) && Number.isNaN(Number.parseInt(args[mentionIndex - 1], 10)) || !args[mentionIndex - 1]) {
+          time = args[mentionIndex + 1];
+        } else if (!Number.isNaN(Number.parseInt(args[mentionIndex - 1], 10)) && !Number.isNaN(Number.parseInt(args[mentionIndex + 1], 10))) {
+          utils.sendResponse(msg, 'Time value before and after the mention is ambiguous', 'info');
+          if (args[mentionIndex + 2] && !args[mentionIndex - 2]) {
+            time = args[mentionIndex - 1];
+          } else if (args[mentionIndex - 2] && !args[mentionIndex + 2]) {
+            time = args[mentionIndex + 1];
+          } else {
+            utils.sendResponse(msg, 'Can\'t autoselect a time value based on surrounding text. Defaulting to first value', 'info');
+            time = args[mentionIndex - 1];
+          }
+        } else return utils.sendResponse(msg, `Time must be before or after the user mention\nUsage: ${module.exports.usage}`);
+
+        args.splice(args.indexOf(time), 1);
+        args.splice(utils.regexIndexOf(args, /<@!?(1|\d{17,19})>/), 1);
 
         if (target.roles.find(role => role.name === 'Muted')) {
           return utils.sendResponse(msg, 'This user is already muted', 'err');
         }
 
-        const time = args[1];
-        args.splice(0, 2);
         let reason = args.join(' ');
 
         if (!reason) reason = 'No reason specified';

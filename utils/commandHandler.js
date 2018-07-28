@@ -18,7 +18,7 @@ module.exports = {
           commands[command].main(client, msg, hasArgs);
           console.log(`[INFO] Command ${command} used by: ${msg.author.tag} args: ${msg.content}`);
         } catch (err) {
-          console.log(`[ERROR] (Mention) Error in command used by: ${msg.author.tag} Content: ${msg.content} Error: ${err}`);
+          console.log(`[ERROR] (Mention) Error in command used by: ${msg.author.tag} Content: ${msg.content} Error: ${err} ${err.stack}`);
           //utils.logError(client, msg, 'COMMAND HANDLER ERROR', `The command handler encountered an error while processing a command. Command: ${msg.content} Error: ${err}`);
         }
       }
@@ -32,7 +32,7 @@ module.exports = {
           commands[command].main(client, msg, hasArgs);
           console.log(`[INFO] Command ${command} used by: ${msg.author.tag} args: ${msg.content}`);
         } catch (err) {
-          console.log(`[ERROR] Error in command used by: ${msg.author.tag} Content: ${msg.content} Error: ${err}`);
+          console.log(`[ERROR] Error in command used by: ${msg.author.tag} Content: ${msg.content} Error: ${err} ${err.stack}`);
           //utils.logError(client, msg, 'COMMAND HANDLER ERROR', `The command handler encountered an error while processing a command. Command: ${msg.content} Error: ${err}`);
         }
       }

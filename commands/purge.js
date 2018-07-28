@@ -16,9 +16,9 @@ module.exports = {
         if (Number.isNaN(Number.parseInt(num, 10))) return utils.sendResponse(msg, `The number of messages to delete must be a number\nUsage: ${module.exports.usage}`, 'err');
         if (Number.parseInt(num, 10) > 2000 || Number.parseInt(num, 10) < 1) return utils.sendResponse(msg, `The number of messages to delete must be between 1 and 2000\nUsage: ${module.exports.usage}`, 'err');
 
-        msg.channel.bulkDelete(Number.parseInt(num, 10))
-          .then(messages => utils.writeToModlog(msg.guild.id, 'Manual action', `${messages.size} messages were deleted in #${msg.channel.name} Reason: ${reason}`, false, msg.author))
-          .catch(err => utils.sendResponse(msg, `Error deleting messages: ${err}`, 'err'));
+        msg.channel.bulkDelete(Number.parseInt(num, 10) + 1)
+            .then(messages => utils.writeToModlog(msg.guild.id, 'Manual action', `${messages.size - 1} messages were deleted in #${msg.channel.name} Reason: ${reason}`, false, msg.author))
+            .catch(err => utils.sendResponse(msg, `Error deleting messages: ${err}`, 'err'));
       } else {
         utils.sendResponse(msg, `You must provide a number of messages to purge\nUsage: ${module.exports.usage}`, 'err');
       }

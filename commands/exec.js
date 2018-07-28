@@ -2,8 +2,8 @@ const { exec } = require('child_process');
 const utils = require('../utils/utils.js');
 const CONFIG = require('../config.json');
 module.exports = {
-  help: 'Pong!',
-  usage: `${CONFIG.prefix}ping`,
+  help: 'Execute shell commands (Owner only)',
+  usage: `${CONFIG.prefix}exec df -h`,
   main: (client, msg, hasArgs) => {
     if (!utils.checkPermission(msg.author, msg, 'owner')) {
       utils.sendResponse(msg, 'Only the owner can use this command', 'err');
