@@ -49,7 +49,7 @@ module.exports = {
           });
       }
       else {
-        utils.sendResponse(msg, `You must provide a mention or a userID to hacknaenae!\nUsage: ${module.exports.usage}`, 'err');
+        utils.sendResponse(msg, `You must provide a userID to hacknaenae!\nUsage: ${module.exports.usage}`, 'err');
       }
     } else {
       utils.sendResponse(msg, 'You must have permission to ban members to execute this command', 'err');

@@ -14,19 +14,23 @@ module.exports = {
           args.shift();
           reason = args.join(' ');
         }
+
         else reason = 'No reason provided';
+        if (userArg === '@everyone' || userArg === '@here') return utils.sendResponse(msg, 'What am I gonna do?! Mintz the server ***again***????', 'err');
         if (msg.mentions.users.first()) target = msg.guild.member(msg.mentions.users.first());
         else if (client.users.get(userArg)) target = msg.guild.member(client.users.get(userArg));
-        else {
-          utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
-          return;
-        }
+        else return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
+
+        // Back by popular demand
+        if (target.id === client.user.id) return utils.sendResponse(msg, 'Woah what am I gonna do naenae myself??!??', 'err');
+        else if (target.id === CONFIG.ownerid) return utils.sendResponse(msg, 'I\'m not gonna naenae the god!!!!!!', 'err');
+        else if (target.id === msg.guild.ownerID) return utils.sendResponse(msg, 'Damn that persons the owner no naenae', 'err');
 
         const targetPos = utils.getHighestRolePos(msg.guild.id, target);
         const authorPos = utils.getHighestRolePos(msg.guild.id, msg.author);
         const targetUsr = target.user;
 
-        if (targetPos >= authorPos) utils.sendResponse(msg, `${targetUsr.tag} has a higher or equal role. You also cannot naenae yourself`, 'err');
+        if (targetPos >= authorPos && msg.author.id !== msg.guild.ownerID) utils.sendResponse(msg, `${targetUsr.tag} has a higher or equal role. You also cannot naenae yourself`, 'err');
         else if (!target.bannable) utils.sendResponse(msg, `Missing permissions to naenae ${targetUsr.tag}`, 'err');
         else {
           target.createDM().then(chan => {

@@ -65,9 +65,14 @@ module.exports = {
             }, {
               name: 'ID',
               value: member.id,
-            }
-            ],
+            }, {
+              name: 'Account creation date',
+              value: `${member.user.createdAt.toDateString()} - ${member.user.createdAt.toTimeString()}`,
+            }],
             timestamp: new Date(),
+            thumbnail: {
+              url: member.user.avatarURL() ? member.user.avatarURL() : 'https://cdn.discordapp.com/attachments/328763359535169547/468903512273715200/damn.png',
+            },
           },
         });
       }
@@ -92,6 +97,9 @@ module.exports = {
             }
             ],
             timestamp: new Date(),
+            thumbnail: {
+              url: member.user.avatarURL() ? member.user.avatarURL() : 'https://cdn.discordapp.com/attachments/328763359535169547/468903512273715200/damn.png',
+            },
           },
         });
       }
@@ -125,6 +133,7 @@ module.exports = {
       change = `Old: ${oldRolesChange.join(', ')}\nNew: ${newRolesChange.join(', ')}`;
     }
 
+    if (!change) return console.log('[WARN] Change was empty in guildMemberUpdate!');
     const embed = {
       color: 1571692,
       title: title,
@@ -424,11 +433,4 @@ module.exports = {
       });
     }).catch(err => console.log('[WARN] Logging disabled during guildBanAdd'));;
   },
-
-  //presenceUpdate: (oldMember, newMember) => {
-  // if (newMember.id === '205548226953216009') {
-  //    if (oldMember.presence.activity.details === newMember.presence.activity.details && oldMember.presence.activity.state === newMember.presence.activity.state) return console.log('mefn state and details same :blobsad:');
-  //    mainModule.client.guilds.get('298938210556575755').channels.get('328763359535169547').send(`Mefn status update:\nOld: Details: ${oldMember.presence.activity.details ? oldMember.presence.activity.details : 'N/A'}\nState: ${oldMember.presence.activity.state ? oldMember.presence.activity.state : 'N/A'}\nName: ${oldMember.presence.activity.name ? oldMember.presence.activity.name : 'N/A'}\nNew: Details: ${newMember.presence.activity.details ? newMember.presence.activity.details : 'N/A'}\nState: ${newMember.presence.activity.state ? newMember.presence.activity.state : 'N/A'}\nName: ${newMember.presence.activity.name ? newMember.presence.activity.name : 'N/A'}`)
-  //  }
-  //},
 };

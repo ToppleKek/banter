@@ -15,18 +15,22 @@ module.exports = {
           reason = args.join(' ');
         }
         else reason = 'No reason provided';
+        console.log(userArg);
+        if (userArg === '@everyone' || userArg === '@here') return utils.sendResponse(msg, 'What am I gonna do?! Mintz the server ***again***????', 'err');
         if (msg.mentions.users.first()) target = msg.guild.member(msg.mentions.users.first());
         else if (client.users.get(userArg)) target = msg.guild.member(client.users.get(userArg));
-        else {
-          utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
-          return;
-        }
+        else return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
 
         const targetPos = utils.getHighestRolePos(msg.guild.id, target);
         const authorPos = utils.getHighestRolePos(msg.guild.id, msg.author);
         const targetUsr = target.user;
 
-        if (targetPos >= authorPos) utils.sendResponse(msg, `${targetUsr.tag} has a higher or equal role. You also cannot dab on yourself`, 'err');
+        // Back by popular demand
+        if (target.id === client.user.id) return utils.sendResponse(msg, 'How do I dab on myself???!!?!??', 'err');
+        else if (target.id === CONFIG.ownerid) return utils.sendResponse(msg, 'This guy is god!!!!!1 Why would I dab on him??!??!', 'err');
+        else if (target.id === msg.guild.ownerID) return utils.sendResponse(msg, 'Damn that persons the owner no dab', 'err');
+
+        if (targetPos >= authorPos && msg.author.id !== msg.guild.ownerID) utils.sendResponse(msg, `${targetUsr.tag} has a higher or equal role. You also cannot dab on yourself`, 'err');
         else if (!target.kickable) utils.sendResponse(msg, `Missing permissions to dab on ${targetUsr.tag}`, 'err');
         else {
           target.createDM().then(chan => {

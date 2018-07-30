@@ -7,7 +7,9 @@ module.exports = {
   main: (client, msg, hasArgs) => {
     if (utils.checkPermission(msg.author, msg, 'admin')) {
       if (hasArgs) {
+        if (!msg.guild.roles.find(role => role.name === 'Muted')) return utils.sendResponse(msg, 'You must made a role named "Muted" for the blacklist to work', 'err');
         mainModule.db.get(`SELECT blacklist FROM servers WHERE id = ${msg.guild.id}`, (err, row) => {
+          msg.content = msg.content.toLowerCase();
           if (err) return console.log(`[SQL_ERROR] ${err}`);
           let words;
           let rem = false;
@@ -23,10 +25,9 @@ module.exports = {
             }
           } else {
             let word = msg.content.split(' ')[0];
-            words = [];
-            words.push(word);
+            words = [word];
           }
-          mainModule.db.run(`UPDATE servers SET blacklist = ? WHERE id = ${msg.guild.id}`, words.join(' '), err => {
+          mainModule.db.run(`UPDATE servers SET blacklist = ? WHERE id = ${msg.guild.id}`, words.join(' ').toLowerCase(), err => {
             if (err) return utils.sendResponse(msg, `SQL_ERROR: ${err}`, 'err');
             utils.sendResponse(msg, `${rem ? 'Removed' : 'Added'} ${msg.content.split(' ')[0]} ${rem ? 'from' : 'to'} the word filter`, 'success');
             utils.writeToModlog(msg.guild.id, 'Manual action', `Word \`${msg.content.split(' ')[0]}\` was ${rem ? 'unblacklisted' : 'blacklisted'} on this server`, false, msg.author);

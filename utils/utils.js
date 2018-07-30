@@ -81,7 +81,7 @@ module.exports = {
     });
   },
 
-  writeToModlog(guildID, title, desc, auto, author = 'N/A') {
+  writeToModlog(guildID, title, desc, auto, author = 'N/A', extraFields = []) {
     module.exports.getActionChannel(guildID, 'modlog').then(modlog => {
       let embedAuthor;
       if (auto) {
@@ -101,6 +101,7 @@ module.exports = {
           author: embedAuthor,
           title: title,
           description: desc,
+          fields: extraFields,
           timestamp: new Date(),
         },
       }).catch(err => {
@@ -115,7 +116,7 @@ module.exports = {
     return mainModule.client.guilds.get(guildID).member(usr).roles.highest.position;
   },
 
-  timedMute(userID, guildID, secs, auto, author, reason = 'No reason specified') {
+  timedMute(userID, guildID, secs, auto, author, reason = 'No reason specified', writeToML = true) {
     mainModule.db.run(`INSERT INTO muted VALUES(NULL, "${userID}", "${guildID}")`, err => {
       const guildObj = mainModule.client.guilds.get(guildID);
       if (err) return console.log(err);
@@ -123,10 +124,12 @@ module.exports = {
         guildObj.member(userID).roles.add(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute')
           .then(member => {
             console.log(`[INFO] Timed mute started for user ${userID} on guild ${guildID} for ${secs} seconds`);
-            if (auto) {
-              module.exports.writeToModlog(guildID, 'Automatic action', `User ${mainModule.client.users.get(userID).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, true);
-            } else {
-              module.exports.writeToModlog(guildID, `Manual action`, `User ${mainModule.client.users.get(userID).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, false, author);
+            if (writeToML) {
+              if (auto) {
+                module.exports.writeToModlog(guildID, 'Automatic action', `User ${mainModule.client.users.get(userID).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, true);
+              } else {
+                module.exports.writeToModlog(guildID, `Manual action`, `User ${mainModule.client.users.get(userID).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, false, author);
+              }
             }
             setTimeout(() => {
               mainModule.db.run(`DELETE FROM muted WHERE user_id = "${userID}" AND guild_id = "${guildID}"`);
@@ -135,10 +138,12 @@ module.exports = {
                   .catch(err => {
                     console.log(`[ERROR] Rejected promise in guild ${guildID} from timed mute ending: ${err}`);
                   });
-                if (auto) {
-                  module.exports.writeToModlog(guildID, 'Automatic action', `User ${mainModule.client.users.get(userID).tag} UNMUTED`, true);
-                } else {
-                  module.exports.writeToModlog(guildID, `Automatic action`, `User ${mainModule.client.users.get(userID).tag} UNMUTED`, false, author);
+                if (writeToML) {
+                  if (auto) {
+                    module.exports.writeToModlog(guildID, 'Automatic action', `User ${mainModule.client.users.get(userID).tag} UNMUTED`, true);
+                  } else {
+                    module.exports.writeToModlog(guildID, `Automatic action`, `User ${mainModule.client.users.get(userID).tag} UNMUTED`, false, author);
+                  }
                 }
               } else {
                 console.log('[WARN] Somethings not right here, user left? Timed mute over');

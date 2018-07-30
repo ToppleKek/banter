@@ -7,8 +7,9 @@ module.exports = {
     let target;
     if (msg.mentions.users.first()) target = msg.mentions.users.first();
     else if (client.users.get(msg.content)) target = client.users.get(msg.content);
+    else if (client.users.find(usr => usr.username.toLowerCase() === msg.content.toLowerCase())) target = client.users.find(usr => usr.username.toLowerCase() === msg.content.toLowerCase());
     else target = msg.author;
-    if (!target.presence.activity) return utils.sendResponse(msg, 'That user is not playing a game', 'err');
+    if (!target.presence || !target.presence.activity) return utils.sendResponse(msg, 'That user is not playing a game', 'err');
     if (target.presence.activity && target.presence.activity.state && target.presence.activity.details && target.presence.activity.assets) {
       msg.channel.send({
         embed: {
