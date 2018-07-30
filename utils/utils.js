@@ -116,7 +116,7 @@ module.exports = {
     return mainModule.client.guilds.get(guildID).member(usr).roles.highest.position;
   },
 
-  timedMute(userID, guildID, secs, auto, author, reason = 'No reason specified', writeToML = true) {
+  timedMute(userID, guildID, secs, auto, author, reason = 'No reason specified', writeToMLFirst = true, writeToMLSecond = true) {
     mainModule.db.run(`INSERT INTO muted VALUES(NULL, "${userID}", "${guildID}")`, err => {
       const guildObj = mainModule.client.guilds.get(guildID);
       if (err) return console.log(err);
@@ -124,7 +124,7 @@ module.exports = {
         guildObj.member(userID).roles.add(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute')
           .then(member => {
             console.log(`[INFO] Timed mute started for user ${userID} on guild ${guildID} for ${secs} seconds`);
-            if (writeToML) {
+            if (writeToMLFirst) {
               if (auto) {
                 module.exports.writeToModlog(guildID, 'Automatic action', `User ${mainModule.client.users.get(userID).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, true);
               } else {
@@ -138,7 +138,7 @@ module.exports = {
                   .catch(err => {
                     console.log(`[ERROR] Rejected promise in guild ${guildID} from timed mute ending: ${err}`);
                   });
-                if (writeToML) {
+                if (writeToMLSecond) {
                   if (auto) {
                     module.exports.writeToModlog(guildID, 'Automatic action', `User ${mainModule.client.users.get(userID).tag} UNMUTED`, true);
                   } else {

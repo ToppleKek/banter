@@ -29,7 +29,7 @@ module.exports = {
               .then(msg => {
                 const guild = message.guild;
                 const member = message.guild.member(message.author);
-                utils.timedMute(member.user.id, member.guild.id, 600, true, mainModule.client.user, 'Word filter infraction', false);
+                utils.timedMute(member.user.id, member.guild.id, 600, true, mainModule.client.user, 'Word filter infraction', false, true);
                 utils.writeToModlog(msg.guild.id, 'Word filter broken', `User ${member.user.tag} was muted for 10 minutes for breaking the word filter`, true, mainModule.client.user, [{
                   name: 'Message',
                   value: toCheck.substring(0, 1000),
