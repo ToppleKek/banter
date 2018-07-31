@@ -10,9 +10,8 @@ module.exports = {
     if (isMention) {
       const command = msg.content.split(' ')[1];
       let hasArgs = true;
-      console.log(msg.content);
-      if (msg.content === `<@${client.user.id}> ${command}`) hasArgs = false;
-      msg.content = msg.content.split(' ').splice(2, msg.content.split(' ').length).join(' ');
+      if (msg.content === `<@${client.user.id}> ${command}` || msg.content === `<@!${client.user.id}> ${command}`) hasArgs = false;
+      msg.content.split(' ').splice(0, 1).join(' ');
       if (commands[command]) {
         try {
           commands[command].main(client, msg, hasArgs);
