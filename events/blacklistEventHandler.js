@@ -8,7 +8,7 @@ module.exports = {
     mainModule.db.get(`SELECT blacklist FROM servers WHERE id = ${message.guild.id}`, (err, row) => {
       if (err) return console.log(`[ERROR] blacklistEventHandler: message: ${err}`);
       if (row && row.blacklist) {
-        let toCheck = message.content.toLowerCase().replace(/\s/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        let toCheck = message.content.toLowerCase().replace(/\s/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[*`_]/g, '');
         const bWords = row.blacklist.toLowerCase().split(' ');
         const infractions = [];
         const wordsFound = [];

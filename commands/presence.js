@@ -3,11 +3,16 @@ const CONFIG = require('../config.json');
 module.exports = {
   help: 'Get a users (rich)presence',
   usage: `${CONFIG.prefix}presence @someone`,
-  main: (client, msg, hasArgs) => {
+  main: async (client, msg, hasArgs) => {
     let target;
     if (msg.mentions.users.first()) target = msg.mentions.users.first();
-    else if (client.users.get(msg.content)) target = client.users.get(msg.content);
+    //else if (usrFoundFromID.id) target = usrFoundFromID;
     else if (client.users.find(usr => usr.username.toLowerCase() === msg.content.toLowerCase())) target = client.users.find(usr => usr.username.toLowerCase() === msg.content.toLowerCase());
+    else if (hasArgs) {
+      const usrFoundFromID = await client.users.fetch(msg.content)
+          .catch(err => console.log(`[DEBUG] Err in fetch ${err}`));
+      if (usrFoundFromID.id) target = usrFoundFromID;
+    }
     else target = msg.author;
     if (!target.presence || !target.presence.activity) return utils.sendResponse(msg, 'That user is not playing a game', 'err');
     if (target.presence.activity && target.presence.activity.state && target.presence.activity.details && target.presence.activity.assets) {

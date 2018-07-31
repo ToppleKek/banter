@@ -329,6 +329,9 @@ module.exports = {
         fields.push({
           name: 'Position changed',
           value: `${oldChannel.rawPosition} --> ${newChannel.rawPosition}`,
+        }, {
+          name: 'Type',
+          value: newChannel.type,
         });
       }
       if (fields.length > 0) {
