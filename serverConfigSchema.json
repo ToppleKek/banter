@@ -1,0 +1,8 @@
+{
+  "type": "object",
+  "properties": {
+    "blacklistShowInfractions": { "type": "boolean" },
+    "blacklistIgnoreAdmins": { "type": "boolean" }
+  },
+  "required": ["blacklistShowInfractions", "blacklistIgnoreAdmins"]
+}
