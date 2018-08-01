@@ -1,6 +1,9 @@
 const utils = require('../utils/utils.js');
 const mainModule = require('../bot.js');
 const CONFIG = require('../config.json');
+const atob = require('atob');
+const btoa = require('btoa');
+const configTools = require('../utils/configTools.js');
 module.exports = {
   help: 'Evaluate JavaScript (Owner only)',
   usage: `${CONFIG.prefix}evaljs code`,
