@@ -1,10 +1,18 @@
 const mainModule = require('../bot.js');
 const utils = require('../utils/utils.js');
 const CONFIG = require('../config.json');
+const configTools = require('../utils/configTools.js');
 module.exports = {
-  message: (placeholder, message) => {
+  message: async (placeholder, message) => {
     if (!message.guild || message.author.bot) return;
     if (message.guild.member(message.author) && utils.checkPermission(message.author, message, 'admin') && message.content.startsWith(`${CONFIG.prefix}blacklist`)) return;
+    let conf = await configTools.getConfig(message.guild)
+        .catch(err => console.log(err));
+    if (!conf) conf = CONFIG.defaultConfig;
+    conf = configTools.decodeConfig(conf);
+    if (configTools.validateConfig(conf)) {
+      if (conf.blacklistIgnoreAdmins && utils.checkPermission(message.author, message, 'admin')) return;
+    }
     mainModule.db.get(`SELECT blacklist FROM servers WHERE id = ${message.guild.id}`, (err, row) => {
       if (err) return console.log(`[ERROR] blacklistEventHandler: message: ${err}`);
       if (row && row.blacklist) {
@@ -26,17 +34,27 @@ module.exports = {
           }
 
           message.delete({reason: 'Word filter broken'})
-              .then(msg => {
+              .then(async msg => {
                 const guild = message.guild;
                 const member = message.guild.member(message.author);
+                const fields = [];
+                let conf = await configTools.getConfig(message.guild)
+                    .catch(err => console.log(err));
+                if (!conf) conf = CONFIG.defaultConfig;
+                conf = configTools.decodeConfig(conf);
+                if (configTools.validateConfig(conf)) {
+                  if (conf.blacklistShowInfractions) {
+                    fields.push({
+                      name: 'Message',
+                      value: toCheck.substring(0, 1000),
+                    }, {
+                      name: 'Infractions',
+                      value: infractions.join('\n').substring(0, 1000),
+                    });
+                  }
+                }
                 utils.timedMute(member.user.id, member.guild.id, 600, true, mainModule.client.user, 'Word filter infraction', false, true);
-                utils.writeToModlog(msg.guild.id, 'Word filter broken', `User ${member.user.tag} was muted for 10 minutes for breaking the word filter`, true, mainModule.client.user, [{
-                  name: 'Message',
-                  value: toCheck.substring(0, 1000),
-                }, {
-                  name: 'Infractions',
-                  value: infractions.join('\n').substring(0, 1000),
-                }]);
+                utils.writeToModlog(msg.guild.id, 'Word filter broken', `User ${member.user.tag} was muted for 10 minutes for breaking the word filter`, true, mainModule.client.user, fields);
                 member.createDM()
                     .then(chan => {
                       chan.send({
