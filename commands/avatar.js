@@ -16,7 +16,7 @@ module.exports = {
       extraInfo = 'User not found or none was supplied, returning your avatar';
       target = msg.author.id;
     }
-    msg.channel.send(`${extraInfo ? `\`${extraInfo}\`` : ''} ${client.users.get(target).avatarURL({size:2048})} `).catch(err => {
+    msg.channel.send(`${extraInfo ? `\`${extraInfo}\`` : ''} ${client.users.get(target).avatarURL({size:2048, format:'png'})} `).catch(err => {
       msg.channel.send('Failed to get avatar');
     });
   }

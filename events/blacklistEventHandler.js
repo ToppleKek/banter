@@ -11,12 +11,31 @@ module.exports = {
     if (!conf) conf = CONFIG.defaultConfig;
     conf = configTools.decodeConfig(conf);
     if (configTools.validateConfig(conf)) {
-      if (conf.blacklistIgnoreAdmins && utils.checkPermission(message.author, message, 'admin')) return;
+      if (conf.blIgnoreAdmins && utils.checkPermission(message.author, message, 'admin')) return;
     }
-    mainModule.db.get(`SELECT blacklist FROM servers WHERE id = ${message.guild.id}`, (err, row) => {
+    mainModule.db.get(`SELECT blacklist FROM servers WHERE id = ${message.guild.id}`, async (err, row) => {
       if (err) return console.log(`[ERROR] blacklistEventHandler: message: ${err}`);
       if (row && row.blacklist) {
-        let toCheck = message.content.toLowerCase().replace(/\s/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[*`_]/g, '');
+        let toCheck;
+        let conf = await configTools.getConfig(message.guild)
+            .catch(err => console.log(err));
+        if (!conf) conf = CONFIG.defaultConfig;
+        conf = configTools.decodeConfig(conf);
+        if (configTools.validateConfig(conf)) {
+          switch (conf.blLevel) {
+            case 0:
+              toCheck = message.content;
+              break;
+            case 1:
+              toCheck = message.content.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[*`_]/g, '');
+              break;
+            case 2:
+              toCheck = message.content.toLowerCase().replace(/\s/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[*`_]/g, '');
+              break;
+            default:
+              toCheck = message.content.toLowerCase().replace(/\s/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[*`_]/g, '');
+          }
+        }
         const bWords = row.blacklist.toLowerCase().split(' ');
         const infractions = [];
         const wordsFound = [];
@@ -43,7 +62,7 @@ module.exports = {
                 if (!conf) conf = CONFIG.defaultConfig;
                 conf = configTools.decodeConfig(conf);
                 if (configTools.validateConfig(conf)) {
-                  if (conf.blacklistShowInfractions) {
+                  if (conf.blShowInfractions) {
                     fields.push({
                       name: 'Message',
                       value: toCheck.substring(0, 1000),

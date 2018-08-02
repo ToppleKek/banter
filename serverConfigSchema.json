@@ -1,8 +1,13 @@
 {
   "type": "object",
   "properties": {
-    "blacklistShowInfractions": { "type": "boolean" },
-    "blacklistIgnoreAdmins": { "type": "boolean" }
+    "blShowInfractions": { "type": "boolean" },
+    "blIgnoreAdmins": { "type": "boolean" },
+    "blLevel": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2
+    }
   },
-  "required": ["blacklistShowInfractions", "blacklistIgnoreAdmins"]
+  "required": ["blShowInfractions", "blIgnoreAdmins", "blLevel"]
 }

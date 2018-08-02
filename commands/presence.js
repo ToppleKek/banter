@@ -44,10 +44,10 @@ module.exports = {
             \nType: ${target.presence.activity.type}`
           }],
           thumbnail: {
-            url: target.presence.activity.assets.smallImageURL() ? target.presence.activity.assets.smallImageURL({size:2048}) : 'https://cdn.discordapp.com/attachments/298938210556575755/471375338006380547/no_image.png',
+            url: target.presence.activity.assets.smallImageURL() ? target.presence.activity.assets.smallImageURL({size:2048, format:'png'}) : 'https://cdn.discordapp.com/attachments/298938210556575755/471375338006380547/no_image.png',
           },
           image: {
-            url: target.presence.activity.assets.largeImageURL() ? target.presence.activity.assets.largeImageURL({size:2048}) : 'https://cdn.discordapp.com/attachments/298938210556575755/471375338006380547/no_image.png',
+            url: target.presence.activity.assets.largeImageURL() ? target.presence.activity.assets.largeImageURL({size:2048, format:'png'}) : 'https://cdn.discordapp.com/attachments/298938210556575755/471375338006380547/no_image.png',
           },
           color: 4718492,
           timestamp: new Date(),
