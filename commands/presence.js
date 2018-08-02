@@ -8,10 +8,12 @@ module.exports = {
     if (msg.mentions.users.first()) target = msg.mentions.users.first();
     //else if (usrFoundFromID.id) target = usrFoundFromID;
     else if (client.users.find(usr => usr.username.toLowerCase() === msg.content.toLowerCase())) target = client.users.find(usr => usr.username.toLowerCase() === msg.content.toLowerCase());
-    else if (hasArgs) {
+    else if (hasArgs && new RegExp((/[0-9]{18}/g)).test(msg.content)) {
       const usrFoundFromID = await client.users.fetch(msg.content)
-          .catch(err => console.log(`[DEBUG] Err in fetch ${err}`));
-      if (usrFoundFromID.id) target = usrFoundFromID;
+          .catch(err => {
+            target = msg.author;
+          });
+      if (usrFoundFromID) target = usrFoundFromID;
     }
     else target = msg.author;
     if (!target.presence || !target.presence.activity) return utils.sendResponse(msg, 'That user is not playing a game', 'err');
@@ -40,8 +42,11 @@ module.exports = {
             \nLarge image text: ${target.presence.activity.assets.largeText ? target.presence.activity.assets.largeText : 'N/A'}`,
           }, {
             name: 'Extra info',
-            value: `Timestamps: ${target.presence.activity.timestamps ? `Start: ${target.presence.activity.timestamps.start} End: ${target.presence.activity.timestamps.end}` : 'N/A'}\
-            \nType: ${target.presence.activity.type}`
+            value: `**Timestamps:** ${target.presence.activity.timestamps ? 
+                   `\nTime elapsed: ${target.presence.activity.timestamps.start ? utils.secondsToHms((Date.now() / 1000) - (target.presence.activity.timestamps.start.getTime() / 1000)) : 'N/A'}\
+                   \nTime left: ${target.presence.activity.timestamps.end ?
+                   utils.secondsToHms((target.presence.activity.timestamps.end.getTime() / 1000) - (Date.now() / 1000)) : 'N/A'}` : 'N/A'}\
+                   \n**Type:** ${target.presence.activity.type}`
           }],
           thumbnail: {
             url: target.presence.activity.assets.smallImageURL() ? target.presence.activity.assets.smallImageURL({size:2048, format:'png'}) : 'https://cdn.discordapp.com/attachments/298938210556575755/471375338006380547/no_image.png',
@@ -66,6 +71,9 @@ module.exports = {
           }, {
             name: 'Presence name',
             value: target.presence.activity.name ? target.presence.activity.name : 'N/A',
+          }, {
+            name: 'Time playing',
+            value: target.presence.activity.timestamps ? utils.secondsToHms((Date.now() / 1000) - (target.presence.activity.timestamps.start.getTime() / 1000)) : 'N/A',
           }, {
             name: 'Type',
             value: target.presence.activity.type,

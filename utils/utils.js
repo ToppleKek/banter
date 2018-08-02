@@ -173,5 +173,16 @@ module.exports = {
       if (arr[i].toString().match(regex)) return i;
     }
     return -1;
-  }
+  },
+
+
+  secondsToHms(d) {
+    d = Number.parseInt(d, 10);
+
+    const h = Math.floor(d / 3600),
+          m = Math.floor(d % 3600 / 60),
+          s = Math.floor(d % 3600 % 60);
+
+    return `${(`0${h}`).slice(-2)}:${(`0${m}`).slice(-2)}:${(`0${s}`).slice(-2)}`;
+}
 };
