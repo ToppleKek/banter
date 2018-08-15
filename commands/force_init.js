@@ -2,7 +2,7 @@ const utils = require('../utils/utils.js');
 const mainModule = require('../bot.js');
 const CONFIG = require('../config.json');
 module.exports = {
-  help: 'Force initialize the database for this server (Owner only)',
+  help: 'Force initialize the database for this server (Bot owner only)',
   usage: `${CONFIG.prefix}force_init`,
   main: (client, msg, hasArgs) => {
     if (utils.checkPermission(msg.author, msg, 'owner')) {

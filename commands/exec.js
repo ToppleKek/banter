@@ -2,7 +2,7 @@ const { exec } = require('child_process');
 const utils = require('../utils/utils.js');
 const CONFIG = require('../config.json');
 module.exports = {
-  help: 'Execute shell commands (Owner only)',
+  help: 'Execute shell commands (Bot owner only)',
   usage: `${CONFIG.prefix}exec df -h`,
   main: (client, msg, hasArgs) => {
     if (!utils.checkPermission(msg.author, msg, 'owner')) {

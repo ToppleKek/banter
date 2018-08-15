@@ -183,6 +183,31 @@ module.exports = {
           m = Math.floor(d % 3600 / 60),
           s = Math.floor(d % 3600 % 60);
 
-    return `${(`0${h}`).slice(-2)}:${(`0${m}`).slice(-2)}:${(`0${s}`).slice(-2)}`;
-}
+    return `${h}:${(`0${m}`).slice(-2)}:${(`0${s}`).slice(-2)}`;
+  },
+
+  getContentType(url) {
+    return new Promise((resolve) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('HEAD', url, true);
+      xhr.onreadystatechange = function () {
+        if (this.readyState === this.DONE) {
+          console.log(`[DEBUG] Status of XMLHTTPREQUEST: ${this.status}`);
+          console.log(`[DEBUG] Content type: ${this.getResponseHeader('Content-Type')}`);
+          resolve(this.getResponseHeader('Content-Type'));
+        }
+      };
+      xhr.send();
+    });
+  },
+
+  cloneObj(obj) {
+    let target = {};
+    for (let prop in obj) {
+      if (obj.hasOwnProperty(prop)) {
+        target[prop] = obj[prop];
+      }
+    }
+    return target;
+  },
 };

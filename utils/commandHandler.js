@@ -23,6 +23,7 @@ module.exports = {
       }
     } else {
       const command = msg.content.split(CONFIG.prefix)[1].split(' ')[0];
+      console.log(`COMMAND: ${command}`);
       let hasArgs = true;
       if (msg.content === CONFIG.prefix + command) hasArgs = false;
       msg.content = msg.content.replace(`${CONFIG.prefix + command} `, '');

@@ -5,7 +5,7 @@ const atob = require('atob');
 const btoa = require('btoa');
 const configTools = require('../utils/configTools.js');
 module.exports = {
-  help: 'Evaluate JavaScript (Owner only)',
+  help: 'Evaluate JavaScript (Bot owner only)',
   usage: `${CONFIG.prefix}evaljs code`,
   main: (client, msg, hasArgs) => {
     if (utils.checkPermission(msg.author, msg, 'owner')) {
