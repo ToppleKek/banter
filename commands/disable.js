@@ -4,8 +4,9 @@ const CONFIG = require('../config.json');
 module.exports = {
   help: 'Disable a channel action',
   usage: `${CONFIG.prefix}disable <log|modlog|starboard>`,
-  main: (client, msg, hasArgs) => {
-    if (utils.checkPermission(msg.author, msg, 'admin')) {
+  main: async (client, msg, hasArgs) => {
+    const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
+    if (hasMR) {
       if (!hasArgs) {
         utils.sendResponse(msg, `You must provide something to Disable!\nUsage: \`${module.exports.usage}\``, 'err');
         return;

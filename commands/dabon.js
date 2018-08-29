@@ -3,8 +3,10 @@ const CONFIG = require('../config.json');
 module.exports = {
   help: 'dabon (kick) a user from the server',
   usage: `${CONFIG.prefix}dabon @someone reason for kick`,
-  main: (client, msg, hasArgs) => {
-    if (utils.checkPermission(msg.author, msg, 'kick')) {
+  main: async (client, msg, hasArgs) => {
+    const hasKICK = await utils.checkPermission(msg.author, msg, 'kick');
+    const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
+    if (hasMR || hasKICK) {
       if (hasArgs) {
         let target;
         const args = msg.content.split(' ');

@@ -4,10 +4,11 @@ const mainModule = require('../bot.js');
 module.exports = {
   help: 'Add/remove a word to the blacklist (toggle)',
   usage: `${CONFIG.prefix}blacklist badword`,
-  main: (client, msg, hasArgs) => {
-    if (utils.checkPermission(msg.author, msg, 'admin')) {
+  main: async (client, msg, hasArgs) => {
+    const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
+    if (hasMR) {
       if (hasArgs) {
-        if (!msg.guild.roles.find(role => role.name === 'Muted')) return utils.sendResponse(msg, 'You must made a role named "Muted" for the blacklist to work', 'err');
+        if (!msg.guild.roles.find(role => role.name === 'Muted')) return utils.sendResponse(msg, 'You must make a role named "Muted" for the blacklist to work', 'err');
         mainModule.db.get(`SELECT blacklist FROM servers WHERE id = ${msg.guild.id}`, (err, row) => {
           msg.content = msg.content.toLowerCase();
           if (err) return console.log(`[SQL_ERROR] ${err}`);

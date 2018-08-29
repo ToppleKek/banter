@@ -3,8 +3,9 @@ const CONFIG = require('../config.json');
 module.exports = {
   help: 'Mass delete messages (that are younger than 2 weeks old) in a channel',
   usage: `${CONFIG.prefix}purge 10 cleaning up chat`,
-  main: (client, msg, hasArgs) => {
-    if (utils.checkPermission(msg.author, msg, 'admin')) {
+  main: async (client, msg, hasArgs) => {
+    const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
+    if (hasMR) {
       if (hasArgs) {
         const args = msg.content.split(' ');
         const num = args[0];

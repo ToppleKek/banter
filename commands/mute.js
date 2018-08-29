@@ -3,8 +3,9 @@ const CONFIG = require('../config.json');
 module.exports = {
   help: 'Mute a user',
   usage: `Note: you may use your own syntax for this command as long as the time number is next to the mention. ${CONFIG.prefix}mute @someone 5 go think about what you've done for 5 minutes`,
-  main: (client, msg, hasArgs) => {
-    if (utils.checkPermission(msg.author, msg, 'admin')) {
+  main: async (client, msg, hasArgs) => {
+    const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
+    if (hasMR) {
       if (hasArgs) {
         const args = msg.content.split(' ');
         let target;
@@ -30,13 +31,21 @@ module.exports = {
             time = args[mentionIndex - 1];
           }
         } else return utils.sendResponse(msg, `Time must be before or after the user mention\nUsage: ${module.exports.usage}`);
-
-        args.splice(args.indexOf(time), 1);
-        args.splice(utils.regexIndexOf(args, /<@!?(1|\d{17,19})>/), 1);
-
+        
         if (target.roles.find(role => role.name === 'Muted')) {
           return utils.sendResponse(msg, 'This user is already muted', 'err');
         }
+
+        if (Number.isNaN(Number.parseInt(time, 10))) {
+          console.log('looks like theres no time');
+          args.splice(utils.regexIndexOf(args, /<@!?(1|\d{17,19})>/), 1);
+          let reason = args.join(' ');
+          if (!reason) reason = 'No reason specified';
+          utils.permaMute(target.id, msg.guild.id, false, msg.author, reason);
+          return utils.sendResponse(msg, `Muted ${target.user.tag}`, 'success');
+        }
+        args.splice(args.indexOf(time), 1);
+        args.splice(utils.regexIndexOf(args, /<@!?(1|\d{17,19})>/), 1);
 
         let reason = args.join(' ');
 
@@ -52,7 +61,7 @@ module.exports = {
         utils.timedMute(target.id, msg.guild.id, time * 60, false, msg.author, reason);
         utils.sendResponse(msg, `Muted ${target.user.tag}`, 'success');
       } else {
-        utils.sendResponse(msg, `You must provide a length of time to mute\nUsage: ${module.exports.usage}`, 'err');
+        utils.sendResponse(msg, `You must provide a user to mute and optional: time to mute\nUsage: ${module.exports.usage}`, 'err');
       }
     } else {
       utils.sendResponse(msg, 'You must be an administrator to execute this command', 'err');

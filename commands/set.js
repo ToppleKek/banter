@@ -4,8 +4,9 @@ const CONFIG = require('../config.json');
 module.exports = {
   help: 'Set your servers channel config',
   usage: `${CONFIG.prefix}set <log|modlog|starboard> #channel`,
-  main: (client, msg, hasArgs) => {
-    if (utils.checkPermission(msg.author, msg, 'admin')) {
+  main: async (client, msg, hasArgs) => {
+    const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
+    if (hasMR) {
       if (!hasArgs) {
         utils.sendResponse(msg, `You must provide something to update and a mention to a channel or a channelID!\nUsage: \`${module.exports.usage}\``, 'err');
         return;

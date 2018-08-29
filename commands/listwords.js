@@ -4,7 +4,7 @@ const mainModule = require('../bot.js');
 module.exports = {
   help: 'List the blacklisted words on the server',
   usage: `${CONFIG.prefix}listwords`,
-  main: (client, msg, hasArgs) => {
+  main: async (client, msg, hasArgs) => {
     mainModule.db.get(`SELECT blacklist FROM servers WHERE id = ${msg.guild.id}`, (err, row) => {
       if (err) return utils.sendResponse(msg, `ERR: ${err}`, 'err');
       if (row && row.blacklist) {

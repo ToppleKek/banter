@@ -6,8 +6,9 @@ const mainModule = require('../bot.js');
 module.exports = {
   help: 'Execute a command as another user (Bot owner only)',
   usage: `${CONFIG.prefix}sudo @someone naenae(...)`,
-  main: (client, msg, hasArgs) => {
-    if (utils.checkPermission(msg.author, msg, 'owner')) {
+  main: async (client, msg, hasArgs) => {
+    const hasMR = await utils.checkPermission(msg.author, msg, 'owner');
+    if (hasMR) {
       if (hasArgs) {
         const args = msg.content.split(' ');
         const regex = new RegExp(/<@!?[0-9]+>/g);
@@ -22,29 +23,15 @@ module.exports = {
           target = client.users.get(args[0]);
           args.splice(0, 1);
         }
-        /*
-        if (msg.mentions.users.last()) {
-          target = msg.mentions.users.last();
-          console.log(target.tag);
-          args.splice(0, 1);
-        } else if (client.users.get(args[0])) {
-          target = client.users.get(args[0]);
-          args.splice(0, 1);
-        }
-        */
+
         else return utils.sendResponse(msg, `Invalid user\nUsage:${module.exports.usage}`, 'err');
         console.log(`Args after splice: ${args.join(' ')}`);
 
-
-        //args[0] = `${CONFIG.prefix}${args[0]}`;
-
         let newMsg = utils.cloneObj(msg);
-
-        console.log('INFO');
-        console.dir(newMsg);
 
         newMsg.author = target;
         newMsg.guild = msg.guild;
+        newMsg.mentions.users.delete(newMsg.mentions.users.findKey(user => user === target));
 
         utils.sendResponse(msg, `Executing ${args[0]} as ${target.tag}...`, 'success');
 

@@ -6,6 +6,7 @@ const guildMemberAddEventHandler = require('./events/guildMemberAdd.js');
 const loggingEventHandler = require('./events/loggingEventHandler.js');
 const guildConfigEventHandler = require('./events/guildConfigEventHandler.js');
 const blacklistEventHandler = require('./events/blacklistEventHandler.js');
+const starboardEventHandler = require('./events/starboardEventHandler.js');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 
@@ -18,15 +19,14 @@ module.exports.db = new sqlite3.Database('./data.db', (err) => {
 });
 
 module.exports.client = new Discord.Client({ autoReconnect: true, disableEveryone: true });
-
-let commands = {};
+module.exports.commands = {};
 
 // -- FUNCTIONS --
 function loadCommands() {
   let files = fs.readdirSync(`./commands`);
   for (let file of files) {
     if (file.endsWith('.js')) {
-      commands[file.slice(0, -3)] = require(`./commands/${file}`);
+      module.exports.commands[file.slice(0, -3)] = require(`./commands/${file}`);
       console.log(`Loaded ${file}`);
     }
   }
@@ -34,13 +34,13 @@ function loadCommands() {
 }
 // -- END FUNCTIONS --
 // -- COMMANDS --
-commands.help = {};
-commands.help.help = 'Displays this list';
-commands.help.usage = `${CONFIG.prefix}help <command>`;
-commands.help.main = (client, msg, hasArgs) => {
+module.exports.commands.help = {};
+module.exports.commands.help.help = 'Displays this list';
+module.exports.commands.help.usage = `${CONFIG.prefix}help <command>`;
+module.exports.commands.help.main = (client, msg, hasArgs) => {
   if (!hasArgs) {
     const cmds = [];
-    for (const command in commands) cmds.push(`**${CONFIG.prefix}${command}** - ${commands[command].help}`);
+    for (const command in module.exports.commands) cmds.push(`**${CONFIG.prefix}${command}** - ${module.exports.commands[command].help}`);
 
     const embed = {
       color: 0xED5228,
@@ -52,26 +52,27 @@ commands.help.main = (client, msg, hasArgs) => {
   } else {
     try {
       let usage;
-      if (commands[msg.content].usage) usage = commands[msg.content].usage;
+      if (module.exports.commands[msg.content].usage) usage = module.exports.commands[msg.content].usage;
       else usage = 'No usage info';
-      utils.sendResponse(msg, `**${msg.content}** - ${commands[msg.content].help}\n**Usage:** ${usage}`, 'info');
+      utils.sendResponse(msg, `**${msg.content}** - ${module.exports.commands[msg.content].help}\n**Usage:** ${usage}`, 'info');
     } catch (err) {
       utils.sendResponse(msg, 'Command not found', 'err');
     }
   }
 };
 
-commands.load = {};
-commands.load.help = 'Load a command from ./commands/';
-commands.load.main = (client, msg, hasArgs) => {
-  if (utils.checkPermission(msg.author, msg, 'owner')) {
+module.exports.commands.load = {};
+module.exports.commands.load.help = 'Load a command from ./commands/';
+module.exports.commands.load.main = async (client, msg, hasArgs) => {
+  const hasMR = await utils.checkPermission(msg.author, msg, 'owner');
+  if (hasMR) {
     if (!hasArgs) {
       return utils.sendResponse(msg, 'Missing arguments. Provide a command to unload.', 'err');
     }
     try {
-      delete commands[msg.content];
+      delete module.exports.commands[msg.content];
       delete require.cache[`${__dirname}/commands/${msg.content}.js`];
-      commands[msg.content] = require(`./commands/${msg.content}.js`);
+      module.exports.commands[msg.content] = require(`./commands/${msg.content}.js`);
       utils.sendResponse(msg, `Loaded command: \`${msg.content}\``, 'success');
     } catch(err) {
       utils.sendResponse(msg, `That command was not found or there was an error loading it. Info:\n\`\`\`${err}\`\`\``, 'err');
@@ -81,10 +82,11 @@ commands.load.main = (client, msg, hasArgs) => {
   }
 };
 
-commands.unload = {};
-commands.unload.help = 'Unload a loaded command';
-commands.unload.main = async (client, msg, hasArgs) => {
-  if (utils.checkPermission(msg.author, msg, 'owner')) {
+module.exports.commands.unload = {};
+module.exports.commands.unload.help = 'Unload a loaded command';
+module.exports.commands.unload.main = async (client, msg, hasArgs) => {
+  const hasMR = await utils.checkPermission(msg.author, msg, 'owner');
+  if (hasMR) {
     if (!hasArgs) {
       return utils.sendResponse(msg, 'Missing arguments. Provide a command to unload.', 'err');
     }
@@ -93,33 +95,34 @@ commands.unload.main = async (client, msg, hasArgs) => {
       return utils.sendResponse(msg, `File \`./commands/${msg.content}.js\` not found!`, 'err');
     }
     try {
-      delete commands[msg.content];
+      delete module.exports.commands[msg.content];
       delete require.cache[`${__dirname}/commands/${msg.content}.js`];
       utils.sendResponse(msg, `Unloaded command: \`${msg.content}\``, 'success');
     }
     catch(err){
-      utils.sendResponse(msg, `That command was not found or there was an error unloading it. Info:\n\`\`\`${err}\`\`\``, 'err');
+      utils.sendResponse(msg, `That command was not found or there was an error unloading it. Info:\n\`\`\`${err.stack}\`\`\``, 'err');
     }
   }else {
     utils.sendResponse(msg, 'Only the owner can use this command', 'err');
   }
 };
 
-commands.reload = {};
-commands.reload.help = 'Reloads a loaded command';
-commands.reload.main = (client, msg, hasArgs) => {
-  if (utils.checkPermission(msg.author, msg, 'owner')) {
+module.exports.commands.reload = {};
+module.exports.commands.reload.help = 'Reloads a loaded command';
+module.exports.commands.reload.main = async (client, msg, hasArgs) => {
+  const hasMR = await utils.checkPermission(msg.author, msg, 'owner');
+  if (hasMR) {
     if (!hasArgs) {
       return utils.sendResponse(msg, 'Missing arguments. Provide a command to unload.', 'err');
     }
     try {
-      delete commands[msg.content];
+      delete module.exports.commands[msg.content];
       delete require.cache[`${__dirname}/commands/${msg.content}.js`];
-      commands[msg.content] = require(`./commands/${msg.content}.js`);
+      module.exports.commands[msg.content] = require(`./commands/${msg.content}.js`);
       utils.sendResponse(msg, `Reloaded command: \`${msg.content}\``, 'success');
     }
     catch(err){
-      utils.sendResponse(msg, `That command was not found or there was an error reloading it. Info:\n\`\`\`${err}\`\`\``, 'err');
+      utils.sendResponse(msg, `That command was not found or there was an error reloading it. Info:\n\`\`\`${err.stack}\`\`\``, 'err');
     }
   } else {
     utils.sendResponse(msg, 'Only the owner can use this command', 'err');
@@ -135,9 +138,9 @@ module.exports.client.on('ready', () => {
 module.exports.client.on('message', msg => {
   blacklistEventHandler.message(null, msg);
   if (msg.content.startsWith(`<@${module.exports.client.user.id}>`) || msg.content.startsWith(`<@!${module.exports.client.user.id}>`)) {
-    commandHandler.checkCommand(module.exports.client, commands, msg, true);
+    commandHandler.checkCommand(module.exports.client, module.exports.commands, msg, true);
   } else if (msg.content.startsWith(CONFIG.prefix)) {
-    commandHandler.checkCommand(module.exports.client, commands, msg, false);
+    commandHandler.checkCommand(module.exports.client, module.exports.commands, msg, false);
   }
 });
 
@@ -147,6 +150,8 @@ module.exports.client.on('guildMemberAdd', member => {
   guildMemberAddEventHandler.event(module.exports.client, module.exports.db, member);
   loggingEventHandler.guildMemberAdd(member);
 });
+
+module.exports.client.on('messageReactionAdd', (messageReaction, user) => starboardEventHandler.messageReactionAdd(messageReaction, user));
 
 module.exports.client.on('guildCreate', guild => guildConfigEventHandler.guildCreate(guild));
 module.exports.client.on('guildDelete', guild => guildConfigEventHandler.guildDelete(guild));

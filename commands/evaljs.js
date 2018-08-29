@@ -3,12 +3,14 @@ const mainModule = require('../bot.js');
 const CONFIG = require('../config.json');
 const atob = require('atob');
 const btoa = require('btoa');
+const { exec } = require('child_process');
 const configTools = require('../utils/configTools.js');
 module.exports = {
   help: 'Evaluate JavaScript (Bot owner only)',
   usage: `${CONFIG.prefix}evaljs code`,
-  main: (client, msg, hasArgs) => {
-    if (utils.checkPermission(msg.author, msg, 'owner')) {
+  main: async (client, msg, hasArgs) => {
+    const hasMR = await utils.checkPermission(msg.author, msg, 'owner');
+    if (hasMR) {
       if (hasArgs) {
         const code = msg.content;
         let out;

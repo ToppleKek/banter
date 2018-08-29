@@ -3,8 +3,9 @@ const CONFIG = require('../config.json');
 module.exports = {
   help: 'Add/remove a role from a user (toggle)',
   usage: `${CONFIG.prefix}role @someone role name`,
-  main: (client, msg, hasArgs) => {
-    if (utils.checkPermission(msg.author, msg, 'admin')) {
+  main: async (client, msg, hasArgs) => {
+    const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
+    if (hasMR) {
       if (hasArgs) {
         const args = msg.content.split(' ');
         const userArg = args[0];

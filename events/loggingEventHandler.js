@@ -206,12 +206,12 @@ module.exports = {
       const msgArray = messages.array();
       const content = [];
 
-      content.push(`***Bulk message delete log at ${new Date().toUTCString()} on guild ${messages.first().guild.name}. (All quotes have been removed)***`);
+      content.push(`***Bulk message delete log at ${new Date().toUTCString()} on guild ${messages.first().guild.name} in channel #${messages.first().channel.name}. (All quotes have been removed)***`);
       for (let i = msgArray.length - 1; i > 0; i -= 1) {
         content.push(`[${new Date(msgArray[i].createdTimestamp).toUTCString()}] ${msgArray[i].author.tag} - ${msgArray[i].content}`);
       }
 
-      exec(`echo "${content.join('\n').replace('"', '')}" | haste`, (err, stdout, stderr) => {
+      exec(`echo "${content.join('\n').replace('"', '').replace('(', '').replace(')', '')}" | haste`, (err, stdout, stderr) => {
         if (err) return console.log(err);
         else if (stderr) return console.log(stderr);
         else {

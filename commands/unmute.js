@@ -4,8 +4,9 @@ const mainModule = require('../bot.js');
 module.exports = {
   help: 'Unmute a user',
   usage: `${CONFIG.prefix}unmute @someone`,
-  main: (client, msg, hasArgs) => {
-    if (utils.checkPermission(msg.author, msg, 'admin')) {
+  main: async (client, msg, hasArgs) => {
+    const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
+    if (hasMR) {
       if (hasArgs) {
         const args = msg.content.split(' ');
         const userArg = args[0];

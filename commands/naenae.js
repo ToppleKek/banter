@@ -3,8 +3,10 @@ const CONFIG = require('../config.json');
 module.exports = {
   help: 'naenae (ban) a user from the server',
   usage: `${CONFIG.prefix}naenae @someone reason for ban`,
-  main: (client, msg, hasArgs) => {
-    if (utils.checkPermission(msg.author, msg, 'ban')) {
+  main: async (client, msg, hasArgs) => {
+    const hasBAN = await utils.checkPermission(msg.author, msg, 'ban');
+    const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
+    if (hasMR || hasBAN) {
       if (hasArgs) {
         let target;
         const args = msg.content.split(' ');

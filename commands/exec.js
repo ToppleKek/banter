@@ -4,8 +4,9 @@ const CONFIG = require('../config.json');
 module.exports = {
   help: 'Execute shell commands (Bot owner only)',
   usage: `${CONFIG.prefix}exec df -h`,
-  main: (client, msg, hasArgs) => {
-    if (!utils.checkPermission(msg.author, msg, 'owner')) {
+  main: async (client, msg, hasArgs) => {
+    const hasMR = await utils.checkPermission(msg.author, msg, 'owner');
+    if (!hasMR) {
       utils.sendResponse(msg, 'Only the owner can use this command', 'err');
       return;
     }

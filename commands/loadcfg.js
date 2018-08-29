@@ -6,8 +6,9 @@ const mainModule = require('../bot.js');
 module.exports = {
   help: 'Load base64 config string from web editor',
   usage: `${CONFIG.prefix}loadcfg eyAic29tZUNvbmZpZyI6IHRydWUsICJ3aHlEaWRZb3VEZWNvZGVUaGlzIjogdHJ1ZX0=`,
-  main: (client, msg, hasArgs) => {
-    if (utils.checkPermission(msg.author, msg, 'admin')) {
+  main: async (client, msg, hasArgs) => {
+    const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
+    if (hasMR) {
       if (hasArgs) {
         const json = configTools.decodeConfig(msg.content);
         if (json instanceof Error) utils.sendResponse(msg, `Decoding and parsing your string failed ${json}`, 'err');

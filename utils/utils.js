@@ -44,9 +44,27 @@ module.exports = {
     });
   },
 
-  checkPermission(usr, msg, type) {
+  getModRoles(guild_id) {
+    return new Promise((resolve, reject) => {
+      mainModule.db.get(`SELECT modroles FROM servers WHERE id = ${guild_id}`, (err, row) => {
+        if (err) reject(err);
+        else if (!row || !row.modroles) reject(null);
+        else resolve(row.modroles);
+      });
+    }); 
+  },
+
+  async checkPermission(usr, msg, type, realAdmin = false) {
     switch (type) {
       case 'admin':
+        let modRoles = await module.exports.getModRoles(msg.guild.id).catch(e => console.log(`[DEBUG] Catch get modroles, this guild probably has none GUILD: ${msg.guild.name}  ERROR: ${e}`));
+        if (modRoles) modRoles = modRoles.split(' ');
+        else return msg.guild.member(usr).permissions.has('ADMINISTRATOR');
+        if (realAdmin) return msg.guild.member(usr).permissions.has('ADMINISTRATOR');
+        for (let i = 0; i < modRoles.length; i += 1) {
+          console.log(modRoles[i]);
+          if (msg.guild.member(usr).roles.get(modRoles[i])) return true;
+        }
         return msg.guild.member(usr).permissions.has('ADMINISTRATOR');
       case 'server':
         return msg.guild.member(usr).permissions.has('MANAGE_GUILD');
@@ -59,6 +77,18 @@ module.exports = {
       default:
         return false;
     }
+  },
+
+  async testCheckPermission(usr, msg) {
+    let modRoles = await module.exports.getModRoles(msg.guild.id).catch(e => console.log(`[DEBUG] Catch get modroles, this guild probably has none GUILD: ${msg.guild.name}  ERROR: ${e}`));
+
+    if (modRoles) modRoles = modRoles.split(' ');
+    else return false;
+    for (let i = 0; i < modRoles.length; i += 1) {
+      console.log(modRoles[i]);
+      if (msg.guild.member(usr).roles.get(modRoles[i])) return true;
+    }
+    return false;
   },
 
   fileExists(path) {
@@ -157,6 +187,29 @@ module.exports = {
     })
   },
 
+  permaMute(userID, guildID, auto, author, reason = 'No reason specified', writeToML = true) {
+    mainModule.db.run(`INSERT INTO muted VALUES(NULL, "${userID}", "${guildID}")`, err => {
+      const guildObj = mainModule.client.guilds.get(guildID);
+      if (err) return console.log(err);
+      else {
+        guildObj.member(userID).roles.add(guildObj.roles.find(role => role.name === 'Muted'), 'Permanent mute from bot')
+          .then(member => {
+            console.log(`[INFO] Muted user ${userID} on guild ${guildID}`);
+            if (writeToML) {
+              if (auto) {
+                module.exports.writeToModlog(guildID, 'Automatic action', `User ${mainModule.client.users.get(userID).tag} MUTED. Reason: \`${reason}\``, true);
+              } else {
+                module.exports.writeToModlog(guildID, `Manual action`, `User ${mainModule.client.users.get(userID).tag} MUTED. Reason: \`${reason}\``, false, author);
+              }
+            }
+          })
+          .catch(err => {
+            console.log(`[ERROR] Rejected promise in guild ${guildID} from timed mute: ${err}`);
+          })
+      }
+    })
+  },
+
   getMutualGuilds(user) {
     const clientGuilds = mainModule.client.guilds.array();
     const mutualGuilds = [];
@@ -209,5 +262,5 @@ module.exports = {
       }
     }
     return target;
-  },
+  }
 };
