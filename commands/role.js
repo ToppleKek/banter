@@ -4,8 +4,9 @@ module.exports = {
   help: 'Add/remove a role from a user (toggle)',
   usage: `${CONFIG.prefix}role @someone role name`,
   main: async (client, msg, hasArgs) => {
+    const hasR = await utils.checkPermission(msg.author, msg, 'roles');
     const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
-    if (hasMR) {
+    if (hasMR || hasR) {
       if (hasArgs) {
         const args = msg.content.split(' ');
         const userArg = args[0];

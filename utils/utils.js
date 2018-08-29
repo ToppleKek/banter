@@ -72,6 +72,10 @@ module.exports = {
         return msg.guild.member(usr).permissions.has('BAN_MEMBERS');
       case 'kick':
         return msg.guild.member(usr).permissions.has('KICK_MEMBERS');
+      case 'roles':
+        return msg.guild.member(usr).permissions.has('MANAGE_ROLES');
+      case 'messages':
+        return msg.guild.member(usr).permissions.has('MANAGE_MESSAGES');
       case 'owner':
         return msg.guild.member(usr).id === CONFIG.ownerid;
       default:

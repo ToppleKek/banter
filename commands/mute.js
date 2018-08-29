@@ -4,8 +4,9 @@ module.exports = {
   help: 'Mute a user',
   usage: `Note: you may use your own syntax for this command as long as the time number is next to the mention. ${CONFIG.prefix}mute @someone 5 go think about what you've done for 5 minutes`,
   main: async (client, msg, hasArgs) => {
+    const hasR = await utils.checkPermission(msg.author, msg, 'roles');
     const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
-    if (hasMR) {
+    if (hasMR || hasR) {
       if (hasArgs) {
         const args = msg.content.split(' ');
         let target;

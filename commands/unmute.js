@@ -5,8 +5,9 @@ module.exports = {
   help: 'Unmute a user',
   usage: `${CONFIG.prefix}unmute @someone`,
   main: async (client, msg, hasArgs) => {
+    const hasR = await utils.checkPermission(msg.author, msg, 'roles');
     const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
-    if (hasMR) {
+    if (hasMR || hasR) {
       if (hasArgs) {
         const args = msg.content.split(' ');
         const userArg = args[0];
