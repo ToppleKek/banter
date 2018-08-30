@@ -3,11 +3,12 @@
   "properties": {
     "blShowInfractions": { "type": "boolean" },
     "blIgnoreAdmins": { "type": "boolean" },
+    "logMassDelHaste": { "type": "boolean" },
     "blLevel": {
       "type": "number",
       "minimum": 0,
       "maximum": 2
     }
   },
-  "required": ["blShowInfractions", "blIgnoreAdmins", "blLevel"]
+  "required": ["blShowInfractions", "blIgnoreAdmins", "logMassDelHaste", "blLevel"]
 }

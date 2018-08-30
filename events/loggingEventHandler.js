@@ -1,6 +1,7 @@
 const mainModule = require('../bot.js');
 const utils = require('../utils/utils.js');
 const { exec } = require('child_process');
+const configTools = require('../utils/configTools.js');
 module.exports = {
   channelCreate: channel => {
     if (!channel.guild) return;
@@ -201,32 +202,39 @@ module.exports = {
     });
   },
 
-  messageDeleteBulk: messages => {
+  messageDeleteBulk: async messages => {
     if (messages.first().guild) {
-      const msgArray = messages.array();
-      const content = [];
+      let conf = await configTools.getConfig(messages.first().guild)
+          .catch(err => console.log(err));
+      if (!conf) conf = CONFIG.defaultConfig;
+      conf = configTools.decodeConfig(conf);
+      if (configTools.validateConfig(conf)) {
+        if (!conf.logMassDelHaste) return;
+        const msgArray = messages.array();
+        const content = [];
 
-      content.push(`***Bulk message delete log at ${new Date().toUTCString()} on guild ${messages.first().guild.name} in channel #${messages.first().channel.name}. (All quotes have been removed)***`);
-      for (let i = msgArray.length - 1; i > 0; i -= 1) {
-        content.push(`[${new Date(msgArray[i].createdTimestamp).toUTCString()}] ${msgArray[i].author.tag} - ${msgArray[i].content}`);
-      }
-
-      exec(`echo "${content.join('\n').replace('"', '').replace('(', '').replace(')', '')}" | haste`, (err, stdout, stderr) => {
-        if (err) return console.log(err);
-        else if (stderr) return console.log(stderr);
-        else {
-          utils.getActionChannel(messages.first().guild.id, 'log').then(log => {
-            messages.first().guild.channels.get(log).send({
-              embed: {
-                color: 1571692,
-                title: 'Bulk messages deleted',
-                description: `Deleted messages put into hastebin: ${stdout}`,
-                timestamp: new Date(),
-              },
-            });
-          }).catch(err => console.log('[WARN] Logging disabled during messageDeleteBulk'));
+        content.push(`***Bulk message delete log at ${new Date().toUTCString()} on guild ${messages.first().guild.name} in channel #${messages.first().channel.name}. (All quotes have been removed)***`);
+        for (let i = msgArray.length - 1; i > 0; i -= 1) {
+          content.push(`[${new Date(msgArray[i].createdTimestamp).toUTCString()}] ${msgArray[i].author.tag} - ${msgArray[i].content}`);
         }
-      });
+
+        exec(`echo "${content.join('\n').replace('"', '').replace('(', '').replace(')', '')}" | haste`, (err, stdout, stderr) => {
+          if (err) return console.log(err);
+          else if (stderr) return console.log(stderr);
+          else {
+            utils.getActionChannel(messages.first().guild.id, 'log').then(log => {
+              messages.first().guild.channels.get(log).send({
+                embed: {
+                  color: 1571692,
+                  title: 'Bulk messages deleted',
+                  description: `Deleted messages put into hastebin: ${stdout}`,
+                  timestamp: new Date(),
+                },
+              });
+            }).catch(err => console.log('[WARN] Logging disabled during messageDeleteBulk'));
+          }
+        });
+      }
     }
   },
 
