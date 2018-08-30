@@ -38,7 +38,7 @@ module.exports = {
         utils.sendResponse(msg, `You must provide a user mention or ID to unmute\nUsage: ${module.exports.usage}`, 'err');
       }
     } else {
-      utils.sendResponse(msg, 'You must be an administrator to execute this command', 'err');
+      utils.sendResponse(msg, 'You must have permission to manage roles to execute this command', 'err');
     }
   }
 };

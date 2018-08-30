@@ -41,7 +41,7 @@ module.exports = {
         utils.sendResponse(msg, `You must provide a mention or userID and a role to toggle\nUsage: ${module.exports.usage}`, 'err');
       }
     } else {
-      utils.sendResponse(msg, 'You must be an administrator to use this command', 'err');
+      utils.sendResponse(msg, 'You must have permission to manage roles to use this command', 'err');
     }
   }
 };

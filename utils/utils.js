@@ -62,7 +62,6 @@ module.exports = {
         else return msg.guild.member(usr).permissions.has('ADMINISTRATOR');
         if (realAdmin) return msg.guild.member(usr).permissions.has('ADMINISTRATOR');
         for (let i = 0; i < modRoles.length; i += 1) {
-          console.log(modRoles[i]);
           if (msg.guild.member(usr).roles.get(modRoles[i])) return true;
         }
         return msg.guild.member(usr).permissions.has('ADMINISTRATOR');

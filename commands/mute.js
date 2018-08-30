@@ -1,8 +1,9 @@
 const utils = require('../utils/utils.js');
 const CONFIG = require('../config.json');
+const mainModule = require('../bot.js');
 module.exports = {
-  help: 'Mute a user',
-  usage: `Note: you may use your own syntax for this command as long as the time number is next to the mention. ${CONFIG.prefix}mute @someone 5 go think about what you've done for 5 minutes`,
+  help: 'Mute/unmute a user (toggle)',
+  usage: `Note: you may use your own syntax for this command as long as the time number is next to the mention.\n${CONFIG.prefix}mute @someone 5 go think about what you've done for 5 minutes`,
   main: async (client, msg, hasArgs) => {
     const hasR = await utils.checkPermission(msg.author, msg, 'roles');
     const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
@@ -34,11 +35,16 @@ module.exports = {
         } else return utils.sendResponse(msg, `Time must be before or after the user mention\nUsage: ${module.exports.usage}`);
         
         if (target.roles.find(role => role.name === 'Muted')) {
-          return utils.sendResponse(msg, 'This user is already muted', 'err');
+          if (!Number.isNaN(Number.parseInt(time, 10))) args.splice(args.indexOf(time), 1);
+          args.splice(utils.regexIndexOf(args, /<@!?(1|\d{17,19})>/), 1);
+          const reason = args.join(' ');
+          target.roles.remove(msg.guild.roles.find(role => role.name === 'Muted'));
+          mainModule.db.run(`DELETE FROM muted WHERE user_id = ${target.id} AND guild_id = ${msg.guild.id}`, (err, row) => console.log(`[DEBUG] Tried to delete ${row}`));
+          utils.writeToModlog(msg.guild.id, 'Manual action', `User ${target.user.tag} UNMUTED. Reason: \`${reason ? reason : 'No reason specified'}\``, false, msg.author);
+          return utils.sendResponse(msg, `Unmuted ${target.user.tag}`, 'success');
         }
 
         if (Number.isNaN(Number.parseInt(time, 10))) {
-          console.log('looks like theres no time');
           args.splice(utils.regexIndexOf(args, /<@!?(1|\d{17,19})>/), 1);
           let reason = args.join(' ');
           if (!reason) reason = 'No reason specified';
@@ -65,7 +71,7 @@ module.exports = {
         utils.sendResponse(msg, `You must provide a user to mute and optional: time to mute\nUsage: ${module.exports.usage}`, 'err');
       }
     } else {
-      utils.sendResponse(msg, 'You must be an administrator to execute this command', 'err');
+      utils.sendResponse(msg, 'You must have permission to manage roles to execute this command', 'err');
     }
   }
 };
