@@ -218,7 +218,7 @@ module.exports = {
           content.push(`[${new Date(msgArray[i].createdTimestamp).toUTCString()}] ${msgArray[i].author.tag} - ${msgArray[i].content}`);
         }
 
-        exec(`echo "${content.join('\n').replace('"', '').replace('(', '').replace(')', '')}" | haste`, (err, stdout, stderr) => {
+        exec(`echo "${content.join('\n').replace('"', '').replace('(', '').replace(')', '').replace(/\`/g, '')}" | haste`, (err, stdout, stderr) => {
           if (err) return console.log(err);
           else if (stderr) return console.log(stderr);
           else {

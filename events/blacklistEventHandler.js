@@ -41,6 +41,7 @@ module.exports = {
         const wordsFound = [];
 
         for (let i = 0; i < bWords.length; i += 1) {
+          if (!toCheck) return;
           if (toCheck.includes(bWords[i])) {
             infractions.push(`Word \`${bWords[i]}\` found at index ${toCheck.indexOf(bWords[i])}`);
             wordsFound.push(bWords[i]);

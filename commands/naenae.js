@@ -19,7 +19,7 @@ module.exports = {
 
         else reason = 'No reason provided';
         if (userArg === '@everyone' || userArg === '@here') return utils.sendResponse(msg, 'What am I gonna do?! Mintz the server ***again***????', 'err');
-        if (msg.mentions.users.first()) target = msg.guild.member(msg.mentions.users.first());
+        if (msg.mentions.users.first().id) target = msg.guild.member(msg.mentions.users.first());
         else if (client.users.get(userArg)) target = msg.guild.member(client.users.get(userArg));
         else return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
 
@@ -35,17 +35,16 @@ module.exports = {
         if (targetPos >= authorPos && msg.author.id !== msg.guild.ownerID) utils.sendResponse(msg, `${targetUsr.tag} has a higher or equal role. You also cannot naenae yourself`, 'err');
         else if (!target.bannable) utils.sendResponse(msg, `Missing permissions to naenae ${targetUsr.tag}`, 'err');
         else {
-          target.createDM().then(chan => {
-            chan.send({
-              embed: {
-                color: 1571692,
-                title: `Get heckin naenaed from ${msg.guild.name}`,
-                description: `They banned you for \`${reason}\``,
-                timestamp: new Date(),
-              }
-            }).catch(err => {
-              utils.sendResponse(msg, `Failed to DM ${targetUsr.tag} with error ${err}, trying to ban anyway`, 'info');
-            });
+          const chan = await target.createDM().catch(err => {
+            utils.sendResponse(msg, `Failed to create DM with ${targetUsr.tag} with error ${err}, trying to ban anyway`, 'info');
+          });
+          await chan.send({
+            embed: {
+              color: 1571692,
+              title: `Get heckin naenaed from ${msg.guild.name}`,
+              description: `They banned you for \`${reason}\``,
+              timestamp: new Date(),
+            }
           }).catch(err => {
             utils.sendResponse(msg, `Failed to DM ${targetUsr.tag} with error ${err}, trying to ban anyway`, 'info');
           });
