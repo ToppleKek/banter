@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<script src="configGenerator.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+<style>
+    body {
+        background-color: #202026;
+        font-family: 'Roboto', sans-serif;
+        color: white;
+    }
+</style>
+<head>
+    <meta charset="UTF-8">
+    <title>Banter Web Configuration</title>
+</head>
+<body onload="loadConfig()">
+    <h2 style="text-align: center">Blacklist</h2>
+    <div style="text-align: center" id="blacklist">
+        <input type="checkbox" id="blacklistShowInfractions">Show infractions in modlog<br>
+        <input type="checkbox" id="blacklistIgnoreAdmins">Don't filter messages sent by administrators<br>
+        <br>
+    </div>
+    <h2 style="text-align: center">Blacklist Strictness</h2>
+    <div style="text-align: center" id="blacklistStrict">
+        <input type="radio" id="blLevelLow" name="blLevel" value="low">
+        <label for="blLevelLow">Low: Strip no characters, only check</label>
+        <br>
+        <input type="radio" id="blLevelMed" name="blLevel" value="med">
+        <label for="blLevelMed">Medium: Replace accented characters with normal letters and remove markdown characters</label>
+        <br>
+        <input type="radio" id="blLevelHigh" name="blLevel" value="high">
+        <label for="blLevelHigh">High: Medium, plus removing whitespace</label>
+    </div>
+    <h2 style="text-align: center">Logging</h2>
+    <div style="text-align: center" id="logging">
+        <input type="checkbox" id="logMassDelHaste">Mass deletion of messages get put into a hastebin<br>
+        <br>
+        <input type="checkbox" id="logNoP">Disable the purge command in the log channel<br>
+        <br>
+        <input type="checkbox" id="logNoD">Relog all deleted logs<br>
+        <br>
+    </div>
+    <div style="text-align: center">
+        <button onclick="generateConfig()">Generate Config Command</button>
+    </div>
+    <p style="text-align: center" id="b64string">N/A</p>
+</body>
+</html>
