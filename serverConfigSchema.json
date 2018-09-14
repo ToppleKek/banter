@@ -4,11 +4,13 @@
     "blShowInfractions": { "type": "boolean" },
     "blIgnoreAdmins": { "type": "boolean" },
     "logMassDelHaste": { "type": "boolean" },
+    "logNoP": { "type": "boolean" },
+    "logNoD": { "type": "boolean" },
     "blLevel": {
       "type": "number",
       "minimum": 0,
       "maximum": 2
     }
   },
-  "required": ["blShowInfractions", "blIgnoreAdmins", "logMassDelHaste", "blLevel"]
+  "required": ["blShowInfractions", "blIgnoreAdmins", "logMassDelHaste", "blLevel", "logNoP", "logNoD"]
 }

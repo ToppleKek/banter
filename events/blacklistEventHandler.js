@@ -11,6 +11,7 @@ module.exports = {
     if (!conf) conf = CONFIG.defaultConfig;
     conf = configTools.decodeConfig(conf);
     if (configTools.validateConfig(conf)) {
+      console.log(`[DEBUG] Ignoring admins? ${conf.blIgnoreAdmins} Guild: ${message.guild.name}`);
       if (conf.blIgnoreAdmins && utils.checkPermission(message.author, message, 'admin')) return;
     }
     mainModule.db.get(`SELECT blacklist FROM servers WHERE id = ${message.guild.id}`, async (err, row) => {
@@ -21,6 +22,7 @@ module.exports = {
             .catch(err => console.log(err));
         if (!conf) conf = CONFIG.defaultConfig;
         conf = configTools.decodeConfig(conf);
+        console.log(`[DEBUG] Conf validated? ${configTools.validateConfig(conf)} Guild: ${message.guild.name}`);
         if (configTools.validateConfig(conf)) {
           switch (conf.blLevel) {
             case 0:
@@ -41,7 +43,7 @@ module.exports = {
         const wordsFound = [];
 
         for (let i = 0; i < bWords.length; i += 1) {
-          if (!toCheck) return;
+          console.log(`[DEBUG] toCheck: ${toCheck}`);
           if (toCheck.includes(bWords[i])) {
             infractions.push(`Word \`${bWords[i]}\` found at index ${toCheck.indexOf(bWords[i])}`);
             wordsFound.push(bWords[i]);

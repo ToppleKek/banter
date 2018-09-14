@@ -157,9 +157,31 @@ module.exports = {
     });
   },
 
-  messageDelete: message => {
+  messageDelete: async message => {
     if (!message.guild) return;
-    utils.getActionChannel(message.guild.id, 'log').then(log => {
+    utils.getActionChannel(message.guild.id, 'log').then(async log => {
+      if (log === message.channel.id) {
+        let conf = await configTools.getConfig(message.guild)
+            .catch(err => console.log(err));
+        if (!conf) conf = CONFIG.defaultConfig;
+        conf = configTools.decodeConfig(conf);
+        if (configTools.validateConfig(conf)) {
+          message.guild.fetchAuditLogs().then(audit =>{
+            const embed = {};
+            console.log(`${audit.entries.first().action} - ${audit.entries.first().target.id} - ${message.embeds[0]}`);
+            if (audit.entries.first().action === 'MESSAGE_DELETE' && audit.entries.first().target.id === mainModule.client.user.id && message.embeds[0]) {
+              embed.color = 11736341;
+              embed.title = 'Someone may have tried to delete logs';
+              embed.description = `${audit.entries.first().executor.tag} may have tried to delete a message in logs! Trying to recover and resend in the next message`;
+              embed.timestamp = new Date();
+              const embedResend = message.embeds[0];
+
+              message.guild.channels.get(log).send({embed});
+              message.guild.channels.get(log).send(embedResend);
+            }
+          }).catch(err => console.log(`[DEBUG] audit error ${err}`));
+        }
+      }
       if (log) {
         const fields = [{
           name: 'User',
