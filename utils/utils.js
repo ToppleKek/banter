@@ -1,6 +1,7 @@
 const CONFIG = require('../config.json');
 const fs = require('fs');
 const mainModule = require('../bot.js');
+const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 module.exports = {
   setGame(client, game, type) {
@@ -109,6 +110,7 @@ module.exports = {
       mainModule.db.get(`SELECT * FROM servers WHERE id = ${guildID}`, (err, row) => {
         if (err) reject(err);
         else if (!row || !row[type]) reject(null);
+        else if (!mainModule.client.channels.get(row[type])) reject('Channel no longer exists!');
         else resolve(row[type]);
       });
     });

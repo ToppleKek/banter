@@ -9,6 +9,10 @@ const blacklistEventHandler = require('./events/blacklistEventHandler.js');
 const starboardEventHandler = require('./events/starboardEventHandler.js');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
+const events = {
+  MESSAGE_REACTION_ADD: 'messageReactionAdd',
+  MESSAGE_REACTION_REMOVE: 'messageReactionRemove',
+};
 
 module.exports.db = new sqlite3.Database('./data.db', (err) => {
   if (err) {
@@ -151,7 +155,36 @@ module.exports.client.on('guildMemberAdd', member => {
   loggingEventHandler.guildMemberAdd(member);
 });
 
-module.exports.client.on('messageReactionAdd', (messageReaction, user) => starboardEventHandler.messageReactionAdd(messageReaction, user));
+module.exports.client.on('raw', async event => {
+  if (!events.hasOwnProperty(event.t)) return;
+  const {d: data} = event;
+  if (!module.exports.client.channels.get(data.channel_id).guild) return;
+  const user = module.exports.client.users.get(data.user_id);
+  const channel = module.exports.client.channels.get(data.channel_id);
+
+  if (channel.messages.has(data.message_id)) return;
+
+  const message = await channel.messages.fetch(data.message_id);
+  const emojiKey = (data.emoji.id) ? data.emoji.id : data.emoji.name;
+  let reaction = message.reactions.get(emojiKey);
+
+  if (!reaction) {
+    const emoji = new Discord.Emoji(module.exports.client.guilds.get(data.guild_id), data.emoji);
+    reaction = new Discord.MessageReaction(message, emoji, 1, data.user_id === module.exports.client.user.id);
+  }
+
+  module.exports.client.emit(events[event.t], reaction, user);
+});
+module.exports.client.on('messageReactionAdd', async (messageReaction, user) => {
+    const starboard = await utils.getActionChannel(messageReaction.message.guild.id, 'starboard').catch(err => console.log(`[WARN] Starboard promise reject! Err: ${err}`));
+    if (!starboard) return;
+  starboardEventHandler.messageReactionAdd(messageReaction, user);
+});
+module.exports.client.on('messageReactionRemove', async (messageReaction, user) => {
+    const starboard = await utils.getActionChannel(messageReaction.message.guild.id, 'starboard').catch(err => console.log(`[WARN] Starboard promise reject! Err: ${err}`));
+    if (!starboard) return;
+  starboardEventHandler.messageReactionRemove(messageReaction, user);
+});
 
 module.exports.client.on('guildCreate', guild => guildConfigEventHandler.guildCreate(guild));
 module.exports.client.on('guildDelete', guild => guildConfigEventHandler.guildDelete(guild));
