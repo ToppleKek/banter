@@ -11,7 +11,19 @@ module.exports = {
     for (let i = 0; i < usrArr.length; i += 1) {
       if (usrArr[i].bot || usrArr[i].id === messageReaction.message.author.id) {
         messageReaction.users.remove(usrArr[i].id);
-        return utils.sendResponse(messageReaction.message, `${usrArr[i].tag}: Bot accounts and the target message author cannot star this message!`, 'err');
+        messageReaction.message.channel.send({ embed: {
+          color: 11736341,
+          description: `**${usrArr[i].tag}**: Bot accounts and the target message author cannot star this message!`,
+          timestamp: new Date(),
+        }})
+          .then(message => {
+            setTimeout(() => {
+              message.delete()
+                  .catch(e => console.log(`[ERROR] Error deleting self star message ${e}`));
+            }, 30000);
+          })
+          .catch(e => console.log(`[ERROR] Error sending self star message ${e}`));
+        return;
       }
     }
     mainModule.db.get(`SELECT * FROM starboard WHERE message_id = ${messageReaction.message.id}`, async (err, row) => {
@@ -44,8 +56,10 @@ module.exports = {
             author: {
               name: `${messageReaction.message.author.tag}'s message was starred in ${messageReaction.message.channel.name}`,
               iconURL: messageReaction.message.author.avatarURL() ? messageReaction.message.author.avatarURL() : 'https://cdn.discordapp.com/attachments/328763359535169547/468903512273715200/damn.png',
+              url: `https://canary.discordapp.com/channels/${messageReaction.message.guild.id}/${messageReaction.message.channel.id}/${messageReaction.message.id}`,
             },
             color: 16768849,
+            description: `**Click to jump:** https://canary.discordapp.com/channels/${messageReaction.message.guild.id}/${messageReaction.message.channel.id}/${messageReaction.message.id}`,
             fields: fields,
             timestamp: new Date(),
             footer: {
@@ -82,8 +96,10 @@ module.exports = {
               author: {
                 name: `${messageReaction.message.author.tag}'s message was starred in ${messageReaction.message.channel.name}`,
                 iconURL: messageReaction.message.author.avatarURL() ? messageReaction.message.author.avatarURL() : 'https://cdn.discordapp.com/attachments/328763359535169547/468903512273715200/damn.png',
+                url: `https://canary.discordapp.com/channels/${messageReaction.message.guild.id}/${messageReaction.message.channel.id}/${messageReaction.message.id}`,
               },
               color: 16768849,
+              description: `**Click to jump:** https://canary.discordapp.com/channels/${messageReaction.message.guild.id}/${messageReaction.message.channel.id}/${messageReaction.message.id}`,
               fields: fields,
               timestamp: new Date(),
               footer: {
@@ -143,8 +159,10 @@ module.exports = {
             author: {
               name: `${messageReaction.message.author.tag}'s message was starred in ${messageReaction.message.channel.name}`,
               iconURL: messageReaction.message.author.avatarURL() ? messageReaction.message.author.avatarURL() : 'https://cdn.discordapp.com/attachments/328763359535169547/468903512273715200/damn.png',
+              url: `https://canary.discordapp.com/channels/${messageReaction.message.guild.id}/${messageReaction.message.channel.id}/${messageReaction.message.id}`,
             },
             color: 16768849,
+            description: `**Click to jump:** https://canary.discordapp.com/channels/${messageReaction.message.guild.id}/${messageReaction.message.channel.id}/${messageReaction.message.id}`,
             fields: fields,
             timestamp: new Date(),
             footer: {
