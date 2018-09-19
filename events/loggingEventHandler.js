@@ -165,7 +165,7 @@ module.exports = {
             .catch(err => console.log(err));
         if (!conf) conf = CONFIG.defaultConfig;
         conf = configTools.decodeConfig(conf);
-        if (configTools.validateConfig(conf)) {
+        if (configTools.validateConfig(conf) && conf.logNoD) {
           message.guild.fetchAuditLogs().then(audit =>{
             const embed = {};
             console.log(`${audit.entries.first().action} - ${audit.entries.first().target.id} - ${message.embeds[0]}`);

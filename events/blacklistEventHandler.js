@@ -5,14 +5,15 @@ const configTools = require('../utils/configTools.js');
 module.exports = {
   message: async (placeholder, message) => {
     if (!message.guild || message.author.bot) return;
-    if (message.guild.member(message.author) && utils.checkPermission(message.author, message, 'admin') && message.content.startsWith(`${CONFIG.prefix}blacklist`)) return;
+    const isAdmin = await utils.checkPermission(message.author, message, 'admin');
+    if (message.guild.member(message.author) && isAdmin && message.content.startsWith(`${CONFIG.prefix}blacklist`)) return;
     let conf = await configTools.getConfig(message.guild)
         .catch(err => console.log(err));
     if (!conf) conf = CONFIG.defaultConfig;
     conf = configTools.decodeConfig(conf);
     if (configTools.validateConfig(conf)) {
       console.log(`[DEBUG] Ignoring admins? ${conf.blIgnoreAdmins} Guild: ${message.guild.name}`);
-      if (conf.blIgnoreAdmins && utils.checkPermission(message.author, message, 'admin')) return;
+      if (conf.blIgnoreAdmins && isAdmin) return;
     }
     mainModule.db.get(`SELECT blacklist FROM servers WHERE id = ${message.guild.id}`, async (err, row) => {
       if (err) return console.log(`[ERROR] blacklistEventHandler: message: ${err}`);
