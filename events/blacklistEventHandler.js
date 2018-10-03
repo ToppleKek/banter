@@ -9,9 +9,9 @@ module.exports = {
     if (message.guild.member(message.author) && isAdmin && message.content.startsWith(`${CONFIG.prefix}blacklist`)) return;
     let conf = await configTools.getConfig(message.guild)
         .catch(err => console.log(err));
-    if (!conf) conf = CONFIG.defaultConfig;
-    conf = configTools.decodeConfig(conf);
-    if (configTools.validateConfig(conf)) {
+    // if (!conf) conf = CONFIG.defaultConfig;
+    // conf = configTools.decodeConfig(conf);
+    if (!(conf instanceof Error)) {
       console.log(`[DEBUG] Ignoring admins? ${conf.blIgnoreAdmins} Guild: ${message.guild.name}`);
       if (conf.blIgnoreAdmins && isAdmin) return;
     }
@@ -21,10 +21,9 @@ module.exports = {
         let toCheck;
         let conf = await configTools.getConfig(message.guild)
             .catch(err => console.log(err));
-        if (!conf) conf = CONFIG.defaultConfig;
-        conf = configTools.decodeConfig(conf);
-        console.log(`[DEBUG] Conf validated? ${configTools.validateConfig(conf)} Guild: ${message.guild.name}`);
-        if (configTools.validateConfig(conf)) {
+        // if (!conf) conf = CONFIG.defaultConfig;
+        // conf = configTools.decodeConfig(conf);
+        if (!(conf instanceof Error)) {
           switch (conf.blLevel) {
             case 0:
               toCheck = message.content;
@@ -38,6 +37,8 @@ module.exports = {
             default:
               toCheck = message.content.toLowerCase().replace(/\s/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[*`_]/g, '');
           }
+        } else {
+          console.log(`[ERROR] conf is instanceof Error: ${conf} Guild: ${message.guild.name}`);
         }
         const bWords = row.blacklist.toLowerCase().split(' ');
         const infractions = [];

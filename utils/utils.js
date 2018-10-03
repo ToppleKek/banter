@@ -55,6 +55,16 @@ module.exports = {
     }); 
   },
 
+  getSelfRoles(guild_id) {
+    return new Promise((resolve, reject) => {
+      mainModule.db.get(`SELECT selfroles FROM servers WHERE id = ${guild_id}`, (err, row) => {
+        if (err) reject(err);
+        else if (!row || !row.selfroles) reject(null);
+        else resolve(row.selfroles);
+      });
+    }); 
+  },
+
   async checkPermission(usr, msg, type, realAdmin = false) {
     switch (type) {
       case 'admin':

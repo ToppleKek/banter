@@ -1,11 +1,14 @@
 const utils = require('../utils/utils.js');
 const mainModule = require('../bot.js');
+const configTools = require('../utils/configTools.js');
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 module.exports = {
-  messageReactionAdd: (messageReaction, user) => {
-    console.log(`reaction name: ${messageReaction.emoji.name}`);
-    console.log(messageReaction.emoji.name !== '⭐');
+  messageReactionAdd: async (messageReaction, user) => {
+    const conf = await configTools.getConfig(messageReaction.guild)
+          .catch(err => console.log(`[ERROR] starboard:messageReactionAdd:Failed to get config ${err}`));
+    //const starsRequired = conf instanceof Error ? 5 : conf.starC;
+    const starsRequired = 5;
     if (!messageReaction.message.guild || messageReaction.emoji.name !== '⭐' || messageReaction.message.author === mainModule.client.user) return;
     const usrArr = Array.from(messageReaction.users.values());
     for (let i = 0; i < usrArr.length; i += 1) {
@@ -29,7 +32,7 @@ module.exports = {
     mainModule.db.get(`SELECT * FROM starboard WHERE message_id = ${messageReaction.message.id}`, async (err, row) => {
       if (err) return console.log(`[ERROR] starboardEventHandler: SQL_SELECT: ${err}`);
       if (row) {
-        mainModule.db.run(`UPDATE starboard SET star_count = ${messageReaction.count}`, err => {
+        mainModule.db.run(`UPDATE starboard SET star_count = ${messageReaction.count} WHERE message_id = ${messageReaction.message.id}`, err => {
           if (err) return console.log(`[ERROR] starboardEventHandler: SQL_UPDATE: ${err}`);
         });
         const starboard = await utils.getActionChannel(messageReaction.message.guild.id, 'starboard').catch(err => console.log(`[WARN] Starboard promise reject! Err: ${err}`));
@@ -126,7 +129,7 @@ module.exports = {
     mainModule.db.get(`SELECT * FROM starboard WHERE message_id = ${messageReaction.message.id}`, async (err, row) => {
       if (err) return console.log(`[ERROR] starboardEventHandler: SQL_SELECT: ${err}`);
       if (row) {
-        mainModule.db.run(`UPDATE starboard SET star_count = ${messageReaction.count}`, err => {
+        mainModule.db.run(`UPDATE starboard SET star_count = ${messageReaction.count} WHERE message_id = ${messageReaction.message.id}`, err => {
           if (err) return console.log(`[ERROR] starboardEventHandler: SQL_UPDATE: ${err}`);
         });
         const starboard = await utils.getActionChannel(messageReaction.message.guild.id, 'starboard').catch(err => console.log(`[WARN] Starboard promise reject! Err: ${err}`));

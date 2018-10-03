@@ -163,9 +163,9 @@ module.exports = {
       if (log === message.channel.id) {
         let conf = await configTools.getConfig(message.guild)
             .catch(err => console.log(err));
-        if (!conf) conf = CONFIG.defaultConfig;
-        conf = configTools.decodeConfig(conf);
-        if (configTools.validateConfig(conf) && conf.logNoD) {
+        // if (!conf) conf = CONFIG.defaultConfig;
+        // conf = configTools.decodeConfig(conf);
+        if (!(conf instanceof Error) && conf.logNoD) {
           message.guild.fetchAuditLogs().then(audit =>{
             const embed = {};
             console.log(`${audit.entries.first().action} - ${audit.entries.first().target.id} - ${message.embeds[0]}`);
@@ -228,9 +228,9 @@ module.exports = {
     if (messages.first().guild) {
       let conf = await configTools.getConfig(messages.first().guild)
           .catch(err => console.log(err));
-      if (!conf) conf = CONFIG.defaultConfig;
-      conf = configTools.decodeConfig(conf);
-      if (configTools.validateConfig(conf)) {
+      // if (!conf) conf = CONFIG.defaultConfig;
+      // conf = configTools.decodeConfig(conf);
+      if (!(conf instanceof Error)) {
         if (!conf.logMassDelHaste) return;
         const msgArray = messages.array();
         const content = [];

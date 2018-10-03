@@ -64,8 +64,14 @@ module.exports = {
         } else if (Number.parseInt(time, 10) > 1000) {
           return utils.sendResponse(msg, `Don't you think that might be too long? Maximum time is 1000 minutes\nUsage: ${module.exports.usage}`, 'err');
         }
-
-        utils.timedMute(target.id, msg.guild.id, time * 60, false, msg.author, reason);
+        // Extra check, I have no idea why it keeps getting past but if you do
+        // .!mute @someone 10mins reason
+        // Notice how there is a 'mins' after the number.
+        // For some reason it thinks thats all a-ok but it's really not.
+        // So in modlog and probably in timedMute() the time variable is NaN.
+        // This 'fix' should patch that up.
+        if (Number.isNaN(Number.parseInt(time, 10) * 60)) return utils.sendResponse(msg, `Invalid time\nUsage: ${module.exports.usage}`, 'err');
+        utils.timedMute(target.id, msg.guild.id, Number.parseInt(time, 10) * 60, false, msg.author, reason);
         utils.sendResponse(msg, `Muted ${target.user.tag}`, 'success');
       } else {
         utils.sendResponse(msg, `You must provide a user to mute and optional: time to mute\nUsage: ${module.exports.usage}`, 'err');
