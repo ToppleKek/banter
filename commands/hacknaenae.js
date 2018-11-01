@@ -27,7 +27,7 @@ module.exports = {
             else {
               msg.guild.members.ban(target, { days: 0, reason: reason})
                 .then(member => {
-                  utils.writeToModlog(msg.guild.id, `Manual action`, `${msg.author.tag} hacknaenaed ${target.tag} for \`${reason.replace('`', '')}\``, false, msg.author);
+                  utils.writeToModlog(msg.guild.id, 'hacknaenae (ban)', reason, target.tag, false, msg.author);
                   msg.channel.send({
                     embed: {
                       color: 1571692,

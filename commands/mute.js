@@ -40,7 +40,7 @@ module.exports = {
           const reason = args.join(' ');
           target.roles.remove(msg.guild.roles.find(role => role.name === 'Muted'));
           mainModule.db.run(`DELETE FROM muted WHERE user_id = ${target.id} AND guild_id = ${msg.guild.id}`, (err, row) => console.log(`[DEBUG] Tried to delete ${row}`));
-          utils.writeToModlog(msg.guild.id, 'Manual action', `User ${target.user.tag} UNMUTED. Reason: \`${reason ? reason : 'No reason specified'}\``, false, msg.author);
+          utils.writeToModlog(msg.guild.id, `unmute`, reason ? reason : 'No reason provided', target.user.tag, false, msg.author);
           return utils.sendResponse(msg, `Unmuted ${target.user.tag}`, 'success');
         }
 

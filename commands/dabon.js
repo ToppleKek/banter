@@ -52,7 +52,7 @@ module.exports = {
 
           target.kick({ reason: reason })
               .then(member => {
-                utils.writeToModlog(msg.guild.id, `Manual action`, `${msg.author.tag} dabbed on ${targetUsr.tag} for \`${reason.replace('`', '')}\``, false, msg.author);
+                utils.writeToModlog(msg.guild.id, 'dabbed on (kick)', reason, targetUsr.tag, false, msg.author);
                 msg.channel.send({
                   embed: {
                     color: 1571692,

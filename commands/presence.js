@@ -7,7 +7,7 @@ module.exports = {
     let target;
     if (msg.mentions.users.first()) target = msg.mentions.users.first();
     //else if (usrFoundFromID.id) target = usrFoundFromID;
-    else if (client.users.find(usr => usr.username.toLowerCase() === msg.content.toLowerCase())) target = client.users.find(usr => usr.username.toLowerCase() === msg.content.toLowerCase());
+    else if (client.users.find(usr => usr.username.toLowerCase().search(msg.content.toLowerCase()) > -1)) target = client.users.find(usr => usr.username.toLowerCase().search(msg.content.toLowerCase()) > -1);
     else if (hasArgs && new RegExp((/[0-9]{18}/g)).test(msg.content)) {
       const usrFoundFromID = await client.users.fetch(msg.content)
           .catch(err => {

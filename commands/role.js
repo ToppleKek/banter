@@ -26,14 +26,14 @@ module.exports = {
           target.roles.remove(msg.guild.roles.find(role => role.name === roleName))
             .then(member => {
               utils.sendResponse(msg, `Removed ${roleName} from ${member.user.tag}`, 'success');
-              utils.writeToModlog(msg.guild.id, 'Manual action', `${roleName} was removed from ${member.user.tag}`, false, msg.author);
+              utils.writeToModlog(msg.guild.id, `remove role ${roleName}`, 'N/A', member.user.tag, false, msg.author);
             })
             .catch(err => utils.sendResponse(msg, `Error removing role from user: ${err}`, 'err'));
         } else {
           target.roles.add(msg.guild.roles.find(role => role.name === roleName))
             .then(member => {
               utils.sendResponse(msg, `Added ${roleName} to ${member.user.tag}`, 'success');
-              utils.writeToModlog(msg.guild.id, 'Manual action', `${roleName} was added to ${member.user.tag}`, false, msg.author);
+              utils.writeToModlog(msg.guild.id, `add role ${roleName}`, 'N/A', member.user.tag, false, msg.author);
             })
             .catch(err => utils.sendResponse(msg, `Error adding role to user: ${err}`, 'err'));
         }

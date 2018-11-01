@@ -31,7 +31,7 @@ module.exports = {
           mainModule.db.run(`UPDATE servers SET blacklist = ? WHERE id = ${msg.guild.id}`, words.join(' ').toLowerCase(), err => {
             if (err) return utils.sendResponse(msg, `SQL_ERROR: ${err}`, 'err');
             utils.sendResponse(msg, `${rem ? 'Removed' : 'Added'} ${msg.content.split(' ')[0]} ${rem ? 'from' : 'to'} the word filter`, 'success');
-            utils.writeToModlog(msg.guild.id, 'Manual action', `Word \`${msg.content.split(' ')[0]}\` was ${rem ? 'unblacklisted' : 'blacklisted'} on this server`, false, msg.author);
+            utils.writeToModlog(msg.guild.id, `Word \`${msg.content.split(' ')[0]}\` was ${rem ? 'unblacklisted' : 'blacklisted'}`, 'N/A', 'server', false, msg.author);
           });
         });
       } else {

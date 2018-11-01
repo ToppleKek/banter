@@ -93,18 +93,6 @@ module.exports = {
     }
   },
 
-  async testCheckPermission(usr, msg) {
-    let modRoles = await module.exports.getModRoles(msg.guild.id).catch(e => console.log(`[DEBUG] Catch get modroles, this guild probably has none GUILD: ${msg.guild.name}  ERROR: ${e}`));
-
-    if (modRoles) modRoles = modRoles.split(' ');
-    else return false;
-    for (let i = 0; i < modRoles.length; i += 1) {
-      console.log(modRoles[i]);
-      if (msg.guild.member(usr).roles.get(modRoles[i])) return true;
-    }
-    return false;
-  },
-
   fileExists(path) {
     return new Promise((resolve) => {
       fs.stat(path, (err, stats) => {
@@ -126,27 +114,47 @@ module.exports = {
     });
   },
 
-  writeToModlog(guildID, title, desc, auto, author = 'N/A', extraFields = []) {
+  writeToModlog(guildID, action, reason, target, auto, author = 'N/A', warnings = 0, extraFields = []) {
     module.exports.getActionChannel(guildID, 'modlog').then(modlog => {
       let embedAuthor;
       if (auto) {
         embedAuthor = {
-          name: 'Automatic Action',
+          name: 'Moderator action taken',
           iconURL: mainModule.client.user.avatarURL(),
         };
       } else {
         embedAuthor = {
-          name: `Responsible moderator: ${author.tag}`,
+          name: 'Moderator action taken',
           iconURL: author.avatarURL(),
         };
       }
+
+      const fields = [{
+        name: `${auto ? 'Automatic' : ''} Action`,
+        value: action,
+        inline: true,
+      }, {
+        name: 'Responsible Moderator',
+        value: auto ? `${mainModule.client.user.tag}` : author.tag,
+        inline: true,
+      }, {
+        name: 'Target',
+        value: target,
+        inline: true,
+      }, {
+        name: 'Warnings Issued',
+        value: warnings,
+        inline: true,
+      }];
+
+      fields.push(...extraFields);
+
       mainModule.client.channels.get(modlog).send({
         embed: {
           color: 34303,
           author: embedAuthor,
-          title: title,
-          description: desc,
-          fields: extraFields,
+          description: reason,
+          fields: fields,
           timestamp: new Date(),
         },
       }).catch(err => {
@@ -171,9 +179,9 @@ module.exports = {
             console.log(`[INFO] Timed mute started for user ${userID} on guild ${guildID} for ${secs} seconds`);
             if (writeToMLFirst) {
               if (auto) {
-                module.exports.writeToModlog(guildID, 'Automatic action', `User ${mainModule.client.users.get(userID).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, true);
+                module.exports.writeToModlog(guildID, `timed mute for ${secs / 60} minutes`, reason, mainModule.client.users.get(userID).tag, true);
               } else {
-                module.exports.writeToModlog(guildID, `Manual action`, `User ${mainModule.client.users.get(userID).tag} MUTED for ${secs} seconds. Reason: \`${reason}\``, false, author);
+                module.exports.writeToModlog(guildID, `timed mute for ${secs / 60} minutes`, reason, mainModule.client.users.get(userID).tag, false, author);
               }
             }
             setTimeout(() => {
@@ -185,9 +193,9 @@ module.exports = {
                   });
                 if (writeToMLSecond) {
                   if (auto) {
-                    module.exports.writeToModlog(guildID, 'Automatic action', `User ${mainModule.client.users.get(userID).tag} UNMUTED`, true);
+                    module.exports.writeToModlog(guildID, `timed mute end`, 'time is up', mainModule.client.users.get(userID).tag, true);
                   } else {
-                    module.exports.writeToModlog(guildID, `Automatic action`, `User ${mainModule.client.users.get(userID).tag} UNMUTED`, false, author);
+                    module.exports.writeToModlog(guildID, `timed mute end`, 'time is up', mainModule.client.users.get(userID).tag, false, author);
                   }
                 }
               } else {

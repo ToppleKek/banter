@@ -27,7 +27,7 @@ module.exports = {
   },
 
   validateConfig(json) {
-    if (!validate(json)) console.log(validate.errors);
+    if (!validate(json)) return validate.errors;
     return validate(json);
   },
 
@@ -36,12 +36,11 @@ module.exports = {
       mainModule.db.get(`SELECT config FROM servers WHERE id = ${guild.id}`, (err, row) => {
         if (err) reject(err);
         else if (row && row.config) {
-          let conf = module.exports.decodeConfig(row.config);
-          if (module.exports.validateConfig(conf)) resolve(conf);
-        }
-        else {
-          conf = module.exports.decodeConfig(CONFIG.defaultConfig);
-          if (module.exports.validateConfig(conf)) resolve(conf);
+          let conf = this.decodeConfig(row.config);
+          if (typeof this.validateConfig(conf) === 'boolean' && this.validateConfig(conf)) resolve(conf);
+        } else {
+          conf = this.decodeConfig(CONFIG.defaultConfig);
+          if (typeof this.validateConfig(conf) === 'boolean' && this.validateConfig(conf)) resolve(conf);
           else reject(new Error('error:config:defaultConfigInvalid'));
         }
       });
@@ -57,10 +56,10 @@ module.exports = {
     });
   },
 
-  fixConfigs(errors) {
+  fixConfigs() {
     return new Promise(async (resolve, reject) => {
       const configs = [];
-      const rows = await module.exports.getAllRows()
+      const rows = await this.getAllRows()
                          .catch(err => console.log(`[ERROR] fixConfigs:getAllConfigs:Failed to get all configs: ${err}`));
 
       for (let i = 0; i < rows.length; i += 1) {
@@ -71,8 +70,28 @@ module.exports = {
       }
 
       for (let i = 0; i < configs.length; i += 1) {
-        const conf = module.exports.decodeConfig(configs[i].config);
+        console.log(`CONFIG: ${configs[i].config}`);
+        if (!configs[i].config) continue;
+        const conf = this.decodeConfig(configs[i].config);
+        const vConf = this.validateConfig(conf);
+        const defaultConfig = this.decodeConfig(CONFIG.defaultConfig);
+        if (typeof this.validateConfig(defaultConfig) !== 'boolean') reject(new Error('error:config:defaultConfigInvalid'));
+        if (Array.isArray(vConf)) {
+          for (let j = 0; j < vConf.length; j += 1) {
+            if (vConf[j].dataPath)
+              conf[vConf[j].dataPath.substring(1)] = defaultConfig[vConf[j].dataPath.substring(1)];
+            else {
+              if (vConf[j].keyword === 'required')
+                conf[vConf[j].params.missingProperty] = defaultConfig[vConf[j].params.missingProperty];
+            }
+            mainModule.db.run('UPDATE servers SET config = ? WHERE id = ?', this.encodeConfig(conf), configs[i].guild_id, err => {
+              console.log(`[INFO] Updated guild ${configs[i].guild_id} set config to ${this.encodeConfig(conf)} with errors: ${err ? err : 'none!'}`);
+            });
+          }
+        }
       }
+      console.log('[INFO] Hopefully updated all server configurations correctly...');
+      resolve(configs);
     });
   }
 };

@@ -18,7 +18,7 @@ module.exports = {
         const unban = await msg.guild.members.unban(target.id).catch(err => utils.sendResponse(msg, `There was an error unbanning user ${target.tag} Error: ${err}`, 'err'));
         args.shift();
         reason = args.join(' ');
-        utils.writeToModlog(msg.guild.id, `Manual action`, `${msg.author.tag} whipped ${target.tag} for \`${reason ? reason.replace('`', '') : 'No reason specified'}\``, false, msg.author);
+        utils.writeToModlog(msg.guild.id, 'whip (unban)', reason ? reason : 'No reason provided', target.tag, false, msg.author);
         msg.channel.send({
           embed: {
             color: 1571692,

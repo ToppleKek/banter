@@ -78,7 +78,7 @@ module.exports = {
                   }
                 }
                 utils.timedMute(member.user.id, member.guild.id, 600, true, mainModule.client.user, 'Word filter infraction', false, true);
-                utils.writeToModlog(msg.guild.id, 'Word filter broken', `User ${member.user.tag} was muted for 10 minutes for breaking the word filter`, true, mainModule.client.user, fields);
+                utils.writeToModlog(msg.guild.id, 'timed mute for 10 minutes', 'word filter broken', member.user.tag, true, mainModule.client.user.tag, 0, fields);
                 member.createDM()
                     .then(chan => {
                       chan.send({

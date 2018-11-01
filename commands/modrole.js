@@ -20,7 +20,7 @@ module.exports = {
           else existingRoles.push(roleToAdd.id);
           mainModule.db.run(`UPDATE servers SET modroles = ? WHERE id = ${msg.guild.id}`, existingRoles.join(' '), err => {
             if (err) return utils.sendResponse(msg, `[SQL_ERROR] In update: ${err}`, 'err');
-            utils.writeToModlog(msg.guild.id, 'Manual action', `Role ${roleToAdd.name} was ${rem ? 'removed' : 'added'} ${rem ? 'from' : 'to'} the modrole list.`, false, msg.author);
+            utils.writeToModlog(msg.guild.id, `role ${roleToAdd.name} is ${rem ? 'no longer a modrole' : 'now a modrole'}`, 'N/A', 'server', false, msg.author);
             utils.sendResponse(msg, `${rem ? 'Removed' : 'Added'} ${roleToAdd.name} to list of modroles. All users with this role will ${rem ? 'no longer' : 'now'} have internal "administrator" permission!`, 'success');
           });
         }

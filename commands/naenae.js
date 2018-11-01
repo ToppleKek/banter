@@ -19,7 +19,7 @@ module.exports = {
 
         else reason = 'No reason provided';
         if (userArg === '@everyone' || userArg === '@here') return utils.sendResponse(msg, 'What am I gonna do?! Mintz the server ***again***????', 'err');
-        if (msg.mentions.users.first().id) target = msg.guild.member(msg.mentions.users.first());
+        if (msg.mentions.users.first()) target = msg.guild.member(msg.mentions.users.first());
         else if (client.users.get(userArg)) target = msg.guild.member(client.users.get(userArg));
         else return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
 
@@ -51,7 +51,7 @@ module.exports = {
 
           target.ban({days: 0, reason: reason})
               .then(member => {
-                utils.writeToModlog(msg.guild.id, `Manual action`, `${msg.author.tag} naenaed ${targetUsr.tag} for \`${reason.replace('`', '')}\``, false, msg.author);
+                utils.writeToModlog(msg.guild.id, 'naenae (ban)', reason, targetUsr.tag, false, msg.author);
                 msg.channel.send({
                   embed: {
                     color: 1571692,
