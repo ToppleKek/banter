@@ -148,6 +148,8 @@ module.exports = {
       }];
 
       fields.push(...extraFields);
+      console.dir(extraFields);
+      console.dir(fields);
 
       mainModule.client.channels.get(modlog).send({
         embed: {

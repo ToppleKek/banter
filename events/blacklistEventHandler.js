@@ -64,9 +64,7 @@ module.exports = {
                 const fields = [];
                 let conf = await configTools.getConfig(message.guild)
                     .catch(err => console.log(err));
-                if (!conf) conf = CONFIG.defaultConfig;
-                conf = configTools.decodeConfig(conf);
-                if (configTools.validateConfig(conf)) {
+                if (!(conf instanceof Error)) {
                   if (conf.blShowInfractions) {
                     fields.push({
                       name: 'Message',
