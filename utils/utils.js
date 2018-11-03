@@ -220,9 +220,9 @@ module.exports = {
             console.log(`[INFO] Muted user ${userID} on guild ${guildID}`);
             if (writeToML) {
               if (auto) {
-                module.exports.writeToModlog(guildID, 'Automatic action', `User ${mainModule.client.users.get(userID).tag} MUTED. Reason: \`${reason}\``, true);
+                module.exports.writeToModlog(guildID, 'mute', reason, mainModule.client.users.get(userID).tag, true);
               } else {
-                module.exports.writeToModlog(guildID, `Manual action`, `User ${mainModule.client.users.get(userID).tag} MUTED. Reason: \`${reason}\``, false, author);
+                module.exports.writeToModlog(guildID, `mute`, reason, mainModule.client.users.get(userID).tag, false, author);
               }
             }
           })
