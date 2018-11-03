@@ -5,10 +5,9 @@ const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 module.exports = {
   messageReactionAdd: async (messageReaction, user) => {
-    const conf = await configTools.getConfig(messageReaction.guild)
+    const conf = await configTools.getConfig(messageReaction.message.guild)
           .catch(err => console.log(`[ERROR] starboard:messageReactionAdd:Failed to get config ${err}`));
-    //const starsRequired = conf instanceof Error ? 5 : conf.starC;
-    const starsRequired = 5;
+    console.dir(conf);
     if (!messageReaction.message.guild || messageReaction.emoji.name !== '⭐' || messageReaction.message.author === mainModule.client.user) return;
     const usrArr = Array.from(messageReaction.users.values());
     for (let i = 0; i < usrArr.length; i += 1) {
@@ -75,8 +74,8 @@ module.exports = {
           embed.embed.image.url = messageReaction.message.attachments.first().url;
         }
         messageToEdit.edit(embed);
-      } else if (messageReaction.count >= 5) {
-        if (messageReaction.count >= 5) {
+      } else if (messageReaction.count >= conf.starR) {
+        if (messageReaction.count >= conf.starR) {
           const starboard = await utils.getActionChannel(messageReaction.message.guild.id, 'starboard').catch(err => console.log(`[WARN] Starboard promise reject! Err: ${err}`));
           if (starboard === messageReaction.message.id) return;
           const fields = [{

@@ -1,48 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <script src="configGenerator.js"></script>
-<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-<style>
-    body {
-        background-color: #202026;
-        font-family: 'Roboto', sans-serif;
-        color: white;
-    }
-</style>
 <head>
     <meta charset="UTF-8">
+    <meta property="og:title" content="Banter Web Configuration"/>
+    <meta property="og:url" content="https://editor.diddled.me"/>
+    <meta property="og:description" content="Generate commands to interact with your servers configuration"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <style>
+        body {
+            background-color: #202026;
+            font-family: 'Roboto', sans-serif;
+            color: white;
+        }
+    </style>
     <title>Banter Web Configuration</title>
 </head>
 <body onload="loadConfig()">
-    <h2 style="text-align: center">Blacklist</h2>
-    <div style="text-align: center" id="blacklist">
-        <input type="checkbox" id="blacklistShowInfractions">Show infractions in modlog<br>
-        <input type="checkbox" id="blacklistIgnoreAdmins">Don't filter messages sent by administrators<br>
-        <br>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Banter Web Configuration</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link active" href="https://editor.diddled.me/manual.html">Manual</a>
+            <a class="nav-item nav-link" href="https://discordapp.com/oauth2/authorize?client_id=282876393254289418&permissions=8&scope=bot">Invite</a>
+        </div>
+      </div>
+    </nav>
+    <br>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h2>Blacklist</h2>
+                <div id="blacklist">
+                    <input type="checkbox" id="blacklistShowInfractions">Show infractions in modlog<br>
+                    <input type="checkbox" id="blacklistIgnoreAdmins">Don't filter messages sent by administrators<br>
+                    <br>
+                </div>
+            </div>
+            <div class="col">
+                <h2>Blacklist Strictness</h2>
+                <div id="blacklistStrict">
+                    <input type="radio" id="blLevelLow" name="blLevel" value="low">
+                    <label for="blLevelLow">Low<br>Strip no characters, only check</label>
+                    <br>
+                    <input type="radio" id="blLevelMed" name="blLevel" value="med">
+                    <label for="blLevelMed">Medium<br>Accented characters -> normal letters & remove markdown characters</label>
+                    <br>
+                    <input type="radio" id="blLevelHigh" name="blLevel" value="high">
+                    <label for="blLevelHigh">High<br>Medium, plus removing whitespace</label>
+                </div>
+            </div>
+                <div class="w-100"></div>
+                <div class="col">
+                    <h2>Logging</h2>
+                    <div id="logging">
+                        <input type="checkbox" id="logMassDelHaste">Mass deletion of messages get put into a hastebin<br>
+                        <input type="checkbox" id="logNoP">Disable the purge command in the log channel<br>
+                        <input type="checkbox" id="logNoD">Relog all deleted logs<br>
+                    </div>
+                </div>
+                <div class="col">
+                    <h2>Starboard</h2>
+                    <div id="starboard">
+                        <form>
+                            Star reactions required to star:
+                            <br>
+                            <input type="text" id="starR">
+                        </form>
+                    </div>
+                </div>
+        </div>
     </div>
-    <h2 style="text-align: center">Blacklist Strictness</h2>
-    <div style="text-align: center" id="blacklistStrict">
-        <input type="radio" id="blLevelLow" name="blLevel" value="low">
-        <label for="blLevelLow">Low: Strip no characters, only check</label>
-        <br>
-        <input type="radio" id="blLevelMed" name="blLevel" value="med">
-        <label for="blLevelMed">Medium: Replace accented characters with normal letters and remove markdown characters</label>
-        <br>
-        <input type="radio" id="blLevelHigh" name="blLevel" value="high">
-        <label for="blLevelHigh">High: Medium, plus removing whitespace</label>
-    </div>
-    <h2 style="text-align: center">Logging</h2>
-    <div style="text-align: center" id="logging">
-        <input type="checkbox" id="logMassDelHaste">Mass deletion of messages get put into a hastebin<br>
-        <br>
-        <input type="checkbox" id="logNoP">Disable the purge command in the log channel<br>
-        <br>
-        <input type="checkbox" id="logNoD">Relog all deleted logs<br>
-        <br>
-    </div>
+    <br>
     <div style="text-align: center">
         <button onclick="generateConfig()">Generate Config Command</button>
     </div>
+    <br>
     <p style="text-align: center" id="b64string">N/A</p>
+    <p style="text-align: center; color:red;" id="errorsText"></p>
 </body>
 </html>
