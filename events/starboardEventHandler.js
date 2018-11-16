@@ -5,6 +5,12 @@ const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 module.exports = {
   messageReactionAdd: async (messageReaction, user) => {
+    const ingoredChannels = await utils.getIgnoredChannels(messageReaction.message.guild.id, 'starboard')
+                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+    if (ingoredChannels) {
+      const arr = ingoredChannels.split(' ');
+      if (arr.includes(messageReaction.message.channel.id)) return;
+    }
     const conf = await configTools.getConfig(messageReaction.message.guild)
           .catch(err => console.log(`[ERROR] starboard:messageReactionAdd:Failed to get config ${err}`));
     console.dir(conf);
@@ -122,7 +128,13 @@ module.exports = {
     });
   },
 
-  messageReactionRemove: (messageReaction, user) => {
+  messageReactionRemove: async (messageReaction, user) => {
+    const ingoredChannels = await utils.getIgnoredChannels(messageReaction.message.guild.id, 'starboard')
+                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+    if (ingoredChannels) {
+      const arr = ingoredChannels.split(' ');
+      if (arr.includes(messageReaction.message.channel.id)) return;
+    }
     console.log(`rem reaction name: ${messageReaction.emoji.name}`);
     if (!messageReaction.message.guild || messageReaction.emoji.name !== '⭐' || messageReaction.message.author === mainModule.client.user) return;
     mainModule.db.get(`SELECT * FROM starboard WHERE message_id = ${messageReaction.message.id}`, async (err, row) => {

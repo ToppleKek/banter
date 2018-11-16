@@ -104,7 +104,7 @@ module.exports = {
 
   getActionChannel(guildID, type) {
     return new Promise((resolve, reject) => {
-      if (!['log', 'modlog', 'starboard'].includes(type)) throw 'Invalid type';
+      if (!['log', 'modlog', 'starboard'].includes(type)) reject('Invalid type');
       mainModule.db.get(`SELECT * FROM servers WHERE id = ${guildID}`, (err, row) => {
         if (err) reject(err);
         else if (!row || !row[type]) reject(null);
@@ -285,5 +285,16 @@ module.exports = {
       }
     }
     return target;
+  },
+
+  getIgnoredChannels(guild_id, type = 'log') {
+    return new Promise((resolve, reject) => {
+      if (!['log', 'blacklist', 'starboard'].includes(type)) reject('Invalid type');
+      mainModule.db.get(`SELECT ignored_channels_${type} FROM servers WHERE id = ?`, guild_id, (err, row) => {
+        if (err) reject(err);
+        else if (!row || !row[`ignored_channels_${type}`]) reject(null);
+        else resolve(row[`ignored_channels_${type}`]);
+      });    
+    });
   }
 };

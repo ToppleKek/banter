@@ -5,6 +5,12 @@ const configTools = require('../utils/configTools.js');
 module.exports = {
   message: async (placeholder, message) => {
     if (!message.guild || message.author.bot) return;
+    const ingoredChannels = await utils.getIgnoredChannels(message.guild.id, 'blacklist')
+                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+    if (ingoredChannels) {
+      const arr = ingoredChannels.split(' ');
+      if (arr.includes(message.channel.id)) return;
+    }
     const isAdmin = await utils.checkPermission(message.author, message, 'admin');
     if (message.guild.member(message.author) && isAdmin && message.content.startsWith(`${CONFIG.prefix}blacklist`)) return;
     let conf = await configTools.getConfig(message.guild)

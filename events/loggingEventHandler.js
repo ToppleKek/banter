@@ -3,14 +3,20 @@ const utils = require('../utils/utils.js');
 const { exec } = require('child_process');
 const configTools = require('../utils/configTools.js');
 module.exports = {
-  channelCreate: channel => {
+  channelCreate: async channel => {
     if (!channel.guild) return;
+    const ingoredChannels = await utils.getIgnoredChannels(channel.guild.id)
+                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+    if (ingoredChannels) {
+      const arr = ingoredChannels.split(' ');
+      if (arr.includes(channel.id)) return;
+    }
     utils.getActionChannel(channel.guild.id, 'log').then(log => {
       if (log) {
         channel.guild.channels.get(log).send({
           embed: {
             color: 1571692,
-            title: ':scroll::white_check_mark: Channel created',
+            title: '📜✅ Channel created',
             fields: [{
               name: 'Name',
               value: channel.name,
@@ -28,14 +34,20 @@ module.exports = {
     });
   },
 
-  channelDelete: channel => {
+  channelDelete: async channel => {
     if (!channel.guild) return;
+    const ingoredChannels = await utils.getIgnoredChannels(channel.guild.id)
+                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+    if (ingoredChannels) {
+      const arr = ingoredChannels.split(' ');
+      if (arr.includes(channel.id)) return;
+    }
     utils.getActionChannel(channel.guild.id, 'log').then(log => {
       if (log) {
         channel.guild.channels.get(log).send({
           embed: {
             color: 1571692,
-            title: ':scroll::x: Channel deleted',
+            title: '📜❌ Channel deleted',
             fields: [{
               name: 'Name',
               value: channel.name,
@@ -53,13 +65,13 @@ module.exports = {
     });
   },
 
-  guildMemberAdd: member => {
+  guildMemberAdd: async member => {
     utils.getActionChannel(member.guild.id, 'log').then(log => {
       if (log) {
         member.guild.channels.get(log).send({
           embed: {
             color: 1571692,
-            title: ':white_check_mark: Member joined',
+            title: '✅ Member joined',
             fields: [{
               name: 'Name',
               value: member.user.tag,
@@ -82,13 +94,13 @@ module.exports = {
     });
   },
 
-  guildMemberRemove: member => {
+  guildMemberRemove: async member => {
     utils.getActionChannel(member.guild.id, 'log').then(log => {
       if (log) {
         member.guild.channels.get(log).send({
           embed: {
             color: 1571692,
-            title: ':x: Member left',
+            title: '❌ Member left',
             fields: [{
               name: 'Name',
               value: member.user.tag,
@@ -109,7 +121,7 @@ module.exports = {
     });
   },
 
-  guildMemberUpdate: (oldMember, newMember) => {
+  guildMemberUpdate: async (oldMember, newMember) => {
     let title;
     let change;
     if (oldMember.nickname !== newMember.nickname) {
@@ -159,6 +171,12 @@ module.exports = {
 
   messageDelete: async message => {
     if (!message.guild) return;
+    const ingoredChannels = await utils.getIgnoredChannels(message.guild.id)
+                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+    if (ingoredChannels) {
+      const arr = ingoredChannels.split(' ');
+      if (arr.includes(message.channel.id)) return;
+    }
     utils.getActionChannel(message.guild.id, 'log').then(async log => {
       if (log === message.channel.id) {
         let conf = await configTools.getConfig(message.guild)
@@ -212,7 +230,7 @@ module.exports = {
         message.guild.channels.get(log).send({
           embed: {
             color: 1571692,
-            title: ':scroll::x: Message deleted',
+            title: '📜❌ Message deleted',
             description: `Message deleted in **#${message.channel.name}**`,
             fields: fields,
             timestamp: new Date(),
@@ -226,6 +244,12 @@ module.exports = {
 
   messageDeleteBulk: async messages => {
     if (messages.first().guild) {
+      const ingoredChannels = await utils.getIgnoredChannels(messages.first().guild.id)
+                              .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+      if (ingoredChannels) {
+        const arr = ingoredChannels.split(' ');
+        if (arr.includes(messages.first().channel.id)) return;
+      }
       let conf = await configTools.getConfig(messages.first().guild)
           .catch(err => console.log(err));
       // if (!conf) conf = CONFIG.defaultConfig;
@@ -260,8 +284,14 @@ module.exports = {
     }
   },
 
-  messageUpdate: (oldMessage, newMessage) => {
+  messageUpdate: async (oldMessage, newMessage) => {
     if (!newMessage.guild) return;
+    const ingoredChannels = await utils.getIgnoredChannels(newMessage.guild.id)
+                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+    if (ingoredChannels) {
+      const arr = ingoredChannels.split(' ');
+      if (arr.includes(newMessage.channel.id)) return;
+    }
     utils.getActionChannel(newMessage.guild.id, 'log').then(log => {
       if (log && newMessage.content && oldMessage.content && newMessage.content !== oldMessage.content) {
         newMessage.guild.channels.get(log).send({
@@ -287,7 +317,7 @@ module.exports = {
     });
   },
 
-  userUpdate: (oldUser, newUser) => {
+  userUpdate: async (oldUser, newUser) => {
     const fields = [];
     let embed;
     if (oldUser.tag !== newUser.tag && oldUser.avatarURL() !== newUser.avatarURL()) {
@@ -346,8 +376,14 @@ module.exports = {
     }
   },
 
-  channelUpdate: (oldChannel, newChannel) => {
+  channelUpdate: async (oldChannel, newChannel) => {
     if (newChannel.guild) {
+      const ingoredChannels = await utils.getIgnoredChannels(newChannel.guild.id)
+                              .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+      if (ingoredChannels) {
+        const arr = ingoredChannels.split(' ');
+        if (arr.includes(newChannel.channel.id)) return;
+      }
       const fields = [];
       console.log(`OLD: ${oldChannel.rawPosition} ${oldChannel.name} NEW: ${newChannel.rawPosition} ${newChannel.name}`);
       if (oldChannel.name !== newChannel.name) {
@@ -379,7 +415,7 @@ module.exports = {
     }
   },
 
-  roleCreate: role => {
+  roleCreate: async role => {
     utils.getActionChannel(role.guild.id, 'log').then(log => {
       if (log) {
         role.guild.channels.get(log).send({
@@ -403,7 +439,7 @@ module.exports = {
     });
   },
 
-  roleDelete: role => {
+  roleDelete: async role => {
     utils.getActionChannel(role.guild.id, 'log').then(log => {
       if (log) {
         role.guild.channels.get(log).send({
@@ -427,7 +463,7 @@ module.exports = {
     });
   },
 
-  guildBanAdd: (guild, user) => {
+  guildBanAdd: async (guild, user) => {
     utils.getActionChannel(guild.id, 'log').then(log => {
       guild.channels.get(log).send({
         embed: {
@@ -447,7 +483,7 @@ module.exports = {
     }).catch(err => console.log('[WARN] Logging disabled during guildBanAdd'));
   },
 
-  guildBanRemove: (guild, user) => {
+  guildBanRemove: async (guild, user) => {
     utils.getActionChannel(guild.id, 'log').then(log => {
       guild.channels.get(log).send({
         embed: {

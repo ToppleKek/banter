@@ -8,7 +8,7 @@ module.exports = {
     const hasMR = await utils.checkPermission(msg.author, msg, 'owner');
     if (hasMR) {
       mainModule.db.serialize(() => {
-        mainModule.db.run(`INSERT INTO servers VALUES(NULL, '${msg.guild.name.replace("'", '')}', '${msg.guild.id}', NULL, NULL, NULL, NULL, NULL, NULL, NULL)`, (err) => {
+        mainModule.db.run(`INSERT INTO servers VALUES(NULL, '${msg.guild.name.replace("'", '')}', '${msg.guild.id}', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)`, (err) => {
           if (err) return console.log(err);
         });
       });
