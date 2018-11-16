@@ -11,7 +11,9 @@ module.exports = {
       const command = msg.content.split(' ')[1];
       let hasArgs = true;
       if (msg.content === `<@${client.user.id}> ${command}` || msg.content === `<@!${client.user.id}> ${command}`) hasArgs = false;
-      msg.content.split(' ').splice(0, 1).join(' ');
+      let content = msg.content.split(' ');
+      content.splice(0, 2);
+      msg.content = content.join(' ');
       if (commands[command]) {
         try {
           commands[command].main(client, msg, hasArgs);
