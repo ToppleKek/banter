@@ -35,7 +35,7 @@ module.exports = {
       }
 
   	} else {
-  		utils.sendResponse(msg, 'You must have permission to ban members to execute this command', 'info');
+  		utils.sendResponse(msg, 'You must have permission to ban members to execute this command', 'err');
   	}
   }
 };

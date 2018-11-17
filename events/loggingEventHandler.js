@@ -261,6 +261,29 @@ module.exports = {
 
         content.push(`***Bulk message delete log at ${new Date().toUTCString()} on guild ${messages.first().guild.name} in channel #${messages.first().channel.name}. (All quotes have been removed)***`);
         for (let i = msgArray.length - 1; i > 0; i -= 1) {
+          if (msgArray[i].embeds[0]) {
+            // Ignore this mess
+            const humanFields = [];
+            if (msgArray[i].embeds[0].fields) {
+              for (let j = 0; j < msgArray[i].embeds[0].fields.length; j += 1) {
+                humanFields.push(`[FIELD] Name: ${msgArray[i].embeds[0].fields[j].name}
+                          Value: ${msgArray[i].embeds[0].fields[j].value}
+                          Inline: ${msgArray[i].embeds[0].fields[j].inline}
+                `);
+              }
+            }
+
+            content.push(`[EMBED][${new Date(msgArray[i].createdTimestamp).toUTCString()}] ${msgArray[i].author.tag}:
+                          Author: ${msgArray[i].embeds[0].author}
+                          Colour: ${msgArray[i].embeds[0].color}
+                          Title: ${msgArray[i].embeds[0].title}
+                          Description: ${msgArray[i].embeds[0].description}
+                          Fields: ${humanFields.join('\n                          ')}
+                          Footer: ${msgArray[i].embeds[0].footer ? `Text: ${msgArray[i].embeds[0].footer.text} iconURL: ${msgArray[i].embeds[0].footer.iconURL}` : 'No footer'}\n
+                          Image: ${msgArray[i].embeds[0].image ? msgArray[i].embeds[0].image.url : 'No image'}\n
+                          Thumbnail:  ${msgArray[i].embeds[0].thumbnail ? msgArray[i].embeds[0].thumbnail.url : 'No thumbnail'}\n
+            `);
+          }
           content.push(`[${new Date(msgArray[i].createdTimestamp).toUTCString()}] ${msgArray[i].author.tag} - ${msgArray[i].content}`);
         }
 
