@@ -24,7 +24,7 @@ module.exports = {
           mainModule.db.run(`UPDATE servers SET selfroles = ? WHERE id = ${msg.guild.id}`, existingRoles.join(' '), err => {
             if (err) return utils.sendResponse(msg, `[SQL_ERROR] In update: ${err}`, 'err');
             utils.writeToModlog(msg.guild.id, `role ${roleToAdd.name} is ${rem ? 'no longer public' : 'now public'}`, 'N/A', 'server', false, msg.author);
-            utils.sendResponse(msg, `${rem ? 'Removed' : 'Added'} ${roleToAdd.name} to list of public roles`, 'success');
+            utils.sendResponse(msg, `${rem ? 'Removed' : 'Added'} ${roleToAdd.name} ${rem ? 'from' : 'to'} list of public roles`, 'success');
           });
         }
       } else {

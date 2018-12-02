@@ -42,6 +42,12 @@
                 <div id="blacklist">
                     <input type="checkbox" id="blacklistShowInfractions">Show infractions in modlog<br>
                     <input type="checkbox" id="blacklistIgnoreAdmins">Don't filter messages sent by administrators<br>
+                    <form>
+                        <br>
+                        Minutes to mute:
+                        <br>
+                        <input type="text" id="bmLen">
+                    </form>
                     <br>
                 </div>
             </div>
@@ -77,14 +83,41 @@
                         </form>
                     </div>
                 </div>
+                <div class="col">
+                    <h2>Warnings</h2>
+                    <div id="warings">
+                        <p>Punishment:</p>
+                        <select id="punishSel">
+                            <option value="0">No punishment</option>
+                            <option value="1">Mute</option>
+                            <option value="2">Kick</option>
+                            <option value="3">Ban</option>
+                        </select>
+                        <form>
+                            <br>
+                            Minutes to mute for mute punishment:
+                            <br>
+                            <input type="text" id="wmLen">
+                            <br>
+                            Amount of warnings before punishing:
+                            <br>
+                            <input type="text" id="wLim">
+                        </form>
+                    </div>
+                </div>
+        </div>
+        <div class="row">
+            <div class="w-100"></div>
+            <div class="col">
+                <div style="text-align: center; overflow-wrap: break-word;">
+                    <button onclick="generateConfig()">Generate Config Command</button>
+                </div>
+                <br>
+                <p style="text-align: center; overflow-wrap: break-word;" id="b64string">N/A</p>   
+            </div>
         </div>
     </div>
     <br>
-    <div style="text-align: center">
-        <button onclick="generateConfig()">Generate Config Command</button>
-    </div>
-    <br>
-    <p style="text-align: center" id="b64string">N/A</p>
     <p style="text-align: center; color:red;" id="errorsText"></p>
 </body>
 </html>

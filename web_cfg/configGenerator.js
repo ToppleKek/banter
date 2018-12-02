@@ -3,7 +3,7 @@ function generateConfig() {
   if (errors.length > 0) {
     const humanErrors = [];
     for (let i = 0; i < errors.length; i++) humanErrors.push(`Error: ${errors[i].type} - ${errors[i].message}`);
-    document.getElementById('errorsText').innerHTML = humanErrors.join('\n');
+    document.getElementById('errorsText').innerHTML = humanErrors.join('<br>');
     document.getElementById('b64string').innerHTML = 'Please fix all errors to generate a new command';
   } else {
     let blLevelRadio;
@@ -19,7 +19,11 @@ function generateConfig() {
       "blLevel": blLevelRadio,
       "logNoP": document.getElementById('logNoP').checked,
       "logNoD": document.getElementById('logNoD').checked,
-      "starR": Number.parseInt(document.getElementById('starR').value, 10)
+      "starR": Number.parseInt(document.getElementById('starR').value, 10),
+      "bmLen": Number.parseInt(document.getElementById('bmLen').value, 10),
+      "wmLen": Number.parseInt(document.getElementById('wmLen').value, 10),
+      "wLim": Number.parseInt(document.getElementById('wLim').value, 10),
+      "punish": Number.parseInt(document.getElementById('punishSel').value, 10),
     };
 
     const e = document.getElementById("b64string");
@@ -41,6 +45,10 @@ function loadConfig() {
       document.getElementById('logNoP').checked = json.logNoP;
       document.getElementById('logNoD').checked = json.logNoD;
       document.getElementById('starR').value = json.starR;
+      document.getElementById('bmLen').value = json.bmLen;
+      document.getElementById('wmLen').value = json.wmLen;
+      document.getElementById('wLim').value = json.wLim;
+      document.getElementById('punishSel').value = json.punish;
       switch (json.blLevel) {
         case 0:
           document.getElementById('blLevelLow').checked = true;
@@ -64,8 +72,20 @@ function loadConfig() {
 function findErrors() {
   const errors = [];
   const starRVal = document.getElementById('starR').value;
+  const wmLenVal = document.getElementById('wmLen').value;
+  const bmLenVal = document.getElementById('bmLen').value;
+  const wLimVal = document.getElementById('wLim').value;
+  // Good programming yes yes
   if (Number.isNaN(Number.parseInt(starRVal, 10))) errors.push({type:'num_is_NaN',message:'The star reaction requirement must be a number.'});
-  else if (Number.parseInt(starRVal, 10) < 1 || Number.parseInt(starRVal, 10) > 50) errors.push({type:'num_out_of_range',message:'The star reaction requirement must be between 1 and 50'});
+  if (Number.isNaN(Number.parseInt(wmLenVal, 10)))
+    if (document.getElementById('punishSel').value !== "1") errors.push({type:'num_is_NaN',message:'The warning mute length must be a number.'});
+  if (Number.isNaN(Number.parseInt(bmLenVal, 10))) errors.push({type:'num_is_NaN',message:'The blacklist mute length must be a number.'});
+  if (Number.isNaN(Number.parseInt(wLimVal, 10))) errors.push({type:'num_is_NaN',message:'The warning limit must be a number.'});
+  if (Number.parseInt(starRVal, 10) < 1 || Number.parseInt(starRVal, 10) > 50) errors.push({type:'num_out_of_range',message:'The star reaction requirement must be between 1 and 50'});
+  if (Number.parseInt(wmLenVal, 10) < 1 || Number.parseInt(wmLenVal, 10) > 1000) errors.push({type:'num_out_of_range',message:'The warning mute length must be between 1 and 1000'});
+  if (Number.parseInt(bmLenVal, 10) < 1 || Number.parseInt(bmLenVal, 10) > 1000) errors.push({type:'num_out_of_range',message:'The blacklist mute length must be between 1 and 1000'});
+  if (Number.parseInt(wLimVal, 10) < 1 || Number.parseInt(wLimVal, 10) > 50) errors.push({type:'num_out_of_range',message:'The warning limit must be between 1 and 50'});
+  
   return errors;
 }
 

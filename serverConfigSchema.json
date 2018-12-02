@@ -15,7 +15,27 @@
       "type": "number",
       "minimum": 1,
       "maximum": 50
+    },
+    "bmLen": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "wmLen": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "punish": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 3
+    },
+    "wLim": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 50
     }
   },
-  "required": ["blShowInfractions", "blIgnoreAdmins", "logMassDelHaste", "blLevel", "logNoP", "logNoD", "starR"]
+  "required": ["blShowInfractions", "blIgnoreAdmins", "logMassDelHaste", "blLevel", "logNoP", "logNoD", "starR", "bmLen", "wmLen", "punish", "wLim"]
 }

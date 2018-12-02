@@ -2,6 +2,7 @@ const CONFIG = require('../config.json');
 const fs = require('fs');
 const mainModule = require('../bot.js');
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+const configTools = require('./configTools.js');
 
 module.exports = {
   setGame(client, game, type) {
@@ -295,6 +296,110 @@ module.exports = {
         else if (!row || !row[`ignored_channels_${type}`]) reject(null);
         else resolve(row[`ignored_channels_${type}`]);
       });    
+    });
+  },
+
+  issueWarning(user_id, guild_id, warning) {
+    return new Promise(async (resolve, reject) => {
+      const conf = await configTools.getConfig(mainModule.client.guilds.get(guild_id)).catch(err => console.log(err));
+      mainModule.db.run('INSERT INTO warnings VALUES(?, ?, ?)', user_id, guild_id, JSON.stringify(warning), err => {
+        mainModule.db.all('SELECT * FROM warnings WHERE guild_id = ? AND user_id = ?', guild_id, user_id, async (err, rows) => {
+          if (err) reject(err);
+          else if (!rows) reject(new Error('warnings:noRowsAfterInsert'));
+
+          if (!(conf instanceof Error)) {
+            if (rows.length >= conf.wLim) {
+              const usr = await mainModule.client.users.fetch(user_id);
+              const guild = mainModule.client.guilds.get(guild_id);
+              const humanWarnings = [];
+              const dmChan = await usr.createDM();
+              for (let i = 0; i < rows.length; i += 1) {
+                const warningObj = JSON.parse(rows[i].warning);
+                humanWarnings.push(`${i} - ${warningObj.issuer}: ${warningObj.message}`);
+              }
+              switch (conf.punish) {
+                case 0:
+                  dmChan.send({
+                    embed: {
+                      color: 1571692,
+                      title: `Watch your step on ${guild.name}`,
+                      description: `You have been warned too many times! However, this srever has set no punishment for exceeding the warning limit...`,
+                      fields: [{
+                        name: 'Warnings',
+                        value: humanWarnings.join('\n').substring(0, 1000),
+                      }],
+                      timestamp: new Date(),
+                  }});
+                  mainModule.db.run('DELETE FROM warnings WHERE user_id = ? AND guild_id = ?', user_id, guild_id, err => {
+                    if (err) reject(err);
+                    else console.log(`[INFO] Deleted rows because someone was punished for warnings user_id: ${user_id}`);
+                  });
+                  resolve(true);
+                  break;
+                case 1:
+                  module.exports.timedMute(user_id, guild_id, conf.wmLen * 60, true, mainModule.client.user, 'Warning limit punishment', true, true);
+                  dmChan.send({
+                    embed: {
+                      color: 1571692,
+                      title: `You have been muted on ${guild.name}`,
+                      description: `You have been warned too many times! Muted for ${conf.wmLen} minutes`,
+                      fields: [{
+                        name: 'Warnings',
+                        value: humanWarnings.join('\n').substring(0, 1000),
+                      }],
+                      timestamp: new Date(),
+                  }});
+                  mainModule.db.run('DELETE FROM warnings WHERE user_id = ? AND guild_id = ?', user_id, guild_id, err => {
+                    if (err) reject(err);
+                    else console.log(`[INFO] Deleted rows because someone was punished for warnings user_id: ${user_id}`);
+                  });
+                  resolve(true);
+                  break;
+                case 2:
+                  await dmChan.send({
+                    embed: {
+                      color: 1571692,
+                      title: `You have been kicked from ${guild.name}`,
+                      description: `You have been warned too many times! You have been kicked`,
+                      fields: [{
+                        name: 'Warnings',
+                        value: humanWarnings.join('\n').substring(0, 1000),
+                      }],
+                      timestamp: new Date(),
+                  }});
+                  module.exports.writeToModlog(guild_id, 'kick', 'user exceeded warning limit', usr.tag, true, mainModule.client.user);
+                  await guild.member(usr).kick( {reason: 'user exceeded warning limit'} );
+                  mainModule.db.run('DELETE FROM warnings WHERE user_id = ? AND guild_id = ?', user_id, guild_id, err => {
+                    if (err) reject(err);
+                    else console.log(`[INFO] Deleted rows because someone was punished for warnings user_id: ${user_id}`);
+                  });
+                  resolve(true);
+                  break;
+              case 3:
+                await dmChan.send({
+                  embed: {
+                    color: 1571692,
+                    title: `You have been banned from ${guild.name}`,
+                    description: `You have been warned too many times! You have been banned`,
+                    fields: [{
+                      name: 'Warnings',
+                      value: humanWarnings.join('\n').substring(0, 1000),
+                    }],
+                    timestamp: new Date(),
+                }});
+                module.exports.writeToModlog(guild_id, 'ban', 'user exceeded warning limit', usr.tag, true, mainModule.client.user);
+                await guild.member(usr).ban( {days: 0, reason: 'user exceeded warning limit'} );
+                mainModule.db.run('DELETE FROM warnings WHERE user_id = ? AND guild_id = ?', user_id, guild_id, err => {
+                  if (err) reject(err);
+                  else console.log(`[INFO] Deleted rows because someone was punished for warnings user_id: ${user_id}`);
+                });
+                resolve(true);
+                break;
+              }
+            } else resolve(false);
+          }
+        });  
+      });
     });
   }
 };
