@@ -81,15 +81,15 @@ module.exports = {
                     });
                   }
                 }
-                utils.timedMute(member.user.id, member.guild.id, 600, true, mainModule.client.user, 'Word filter infraction', false, true);
-                utils.writeToModlog(msg.guild.id, 'timed mute for 10 minutes', 'word filter broken', member.user.tag, true, mainModule.client.user.tag, 0, fields);
+                utils.timedMute(member.user.id, member.guild.id, conf.bmLen * 60, true, mainModule.client.user, 'Word filter infraction', false, true);
+                utils.writeToModlog(msg.guild.id, `timed mute for ${conf.bmLen} minutes`, 'word filter broken', member.user.tag, true, mainModule.client.user.tag, 0, fields);
                 member.createDM()
                     .then(chan => {
                       chan.send({
                         embed: {
                           color: 1571692,
                           title: `Your message was deleted on ${guild.name} for breaking the word filter`,
-                          description: `A 10 minute mute was applied`,
+                          description: `A ${conf.bmLen} minute mute was applied`,
                           fields: [{
                             name: 'Message',
                             value: toCheck.substring(0, 1000),
