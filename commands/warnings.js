@@ -60,8 +60,8 @@ module.exports = {
         const collector = msg.channel.createMessageCollector(m => m, { time: 45000 });
         collector.on('collect', async m => {
           if (m.author === msg.author) {
-            if (m.content === 'exit') collector.stop('user');
-            else if (m.content.startsWith('page')) {
+            if (m.content.toLowerCase() === 'exit') collector.stop('user');
+            else if (m.content.toLowerCase().startsWith('page')) {
               let args = m.content.split(' ');
               if (!Number.isNaN(Number.parseInt(args[1], 10)) && Number.parseInt(args[1], 10) < pages.length) {
                 page = args[1];
@@ -78,7 +78,7 @@ module.exports = {
                 };
                 await pageMsg.edit(embed);
               }
-            } else if (m.content.startsWith('delete')) {
+            } else if (m.content.toLowerCase().startsWith('delete')) {
               let args = m.content.split(' ');
               if (!Number.isNaN(Number.parseInt(args[1], 10)) && Number.parseInt(args[1], 10) < pages.length) {
                 mainModule.db.run('DELETE FROM warnings WHERE row_id = ?', pages[page][args[1]].row_id, err => {
