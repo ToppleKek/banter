@@ -302,20 +302,23 @@ module.exports = {
   issueWarning(user_id, guild_id, warning) {
     return new Promise(async (resolve, reject) => {
       const conf = await configTools.getConfig(mainModule.client.guilds.get(guild_id)).catch(err => console.log(err));
-      mainModule.db.run('INSERT INTO warnings VALUES(?, ?, ?)', user_id, guild_id, JSON.stringify(warning), err => {
+      mainModule.db.run('INSERT INTO warnings VALUES(NULL, ?, ?, ?)', user_id, guild_id, JSON.stringify(warning), async e => {
+        if (e) reject(e);
+        const usr = await mainModule.client.users.fetch(user_id);
+        const guild = mainModule.client.guilds.get(guild_id);
+        const issuer = await mainModule.client.users.fetch(warning.issuer);
+        module.exports.writeToModlog(guild_id, 'warn', warning.message, usr.tag, false, issuer, 1);
         mainModule.db.all('SELECT * FROM warnings WHERE guild_id = ? AND user_id = ?', guild_id, user_id, async (err, rows) => {
           if (err) reject(err);
           else if (!rows) reject(new Error('warnings:noRowsAfterInsert'));
 
           if (!(conf instanceof Error)) {
             if (rows.length >= conf.wLim) {
-              const usr = await mainModule.client.users.fetch(user_id);
-              const guild = mainModule.client.guilds.get(guild_id);
               const humanWarnings = [];
               const dmChan = await usr.createDM();
               for (let i = 0; i < rows.length; i += 1) {
                 const warningObj = JSON.parse(rows[i].warning);
-                humanWarnings.push(`${i} - ${warningObj.issuer}: ${warningObj.message}`);
+                humanWarnings.push(`${i} - ${issuer.tag}: ${warningObj.message}`);
               }
               switch (conf.punish) {
                 case 0:
@@ -329,7 +332,7 @@ module.exports = {
                         value: humanWarnings.join('\n').substring(0, 1000),
                       }],
                       timestamp: new Date(),
-                  }});
+                  }}).catch(err => console.log(`[ERROR] failed to dm user: ${err}`));
                   mainModule.db.run('DELETE FROM warnings WHERE user_id = ? AND guild_id = ?', user_id, guild_id, err => {
                     if (err) reject(err);
                     else console.log(`[INFO] Deleted rows because someone was punished for warnings user_id: ${user_id}`);
@@ -348,7 +351,7 @@ module.exports = {
                         value: humanWarnings.join('\n').substring(0, 1000),
                       }],
                       timestamp: new Date(),
-                  }});
+                  }}).catch(err => console.log(`[ERROR] failed to dm user: ${err}`));
                   mainModule.db.run('DELETE FROM warnings WHERE user_id = ? AND guild_id = ?', user_id, guild_id, err => {
                     if (err) reject(err);
                     else console.log(`[INFO] Deleted rows because someone was punished for warnings user_id: ${user_id}`);
@@ -366,9 +369,9 @@ module.exports = {
                         value: humanWarnings.join('\n').substring(0, 1000),
                       }],
                       timestamp: new Date(),
-                  }});
+                  }}).catch(err => console.log(`[ERROR] failed to dm user: ${err}`));
                   module.exports.writeToModlog(guild_id, 'kick', 'user exceeded warning limit', usr.tag, true, mainModule.client.user);
-                  await guild.member(usr).kick( {reason: 'user exceeded warning limit'} );
+                  await guild.member(usr).kick( {reason: 'user exceeded warning limit'} ).catch(err => console.log(`[ERROR] Failed to kick user: ${err}`));
                   mainModule.db.run('DELETE FROM warnings WHERE user_id = ? AND guild_id = ?', user_id, guild_id, err => {
                     if (err) reject(err);
                     else console.log(`[INFO] Deleted rows because someone was punished for warnings user_id: ${user_id}`);
@@ -386,9 +389,9 @@ module.exports = {
                       value: humanWarnings.join('\n').substring(0, 1000),
                     }],
                     timestamp: new Date(),
-                }});
+                }}).catch(err => console.log(`[ERROR] failed to dm user: ${err}`));
                 module.exports.writeToModlog(guild_id, 'ban', 'user exceeded warning limit', usr.tag, true, mainModule.client.user);
-                await guild.member(usr).ban( {days: 0, reason: 'user exceeded warning limit'} );
+                await guild.member(usr).ban( {days: 0, reason: 'user exceeded warning limit'} ).catch(err => console.log(`[ERROR] Failed to ban user: ${err}`));
                 mainModule.db.run('DELETE FROM warnings WHERE user_id = ? AND guild_id = ?', user_id, guild_id, err => {
                   if (err) reject(err);
                   else console.log(`[INFO] Deleted rows because someone was punished for warnings user_id: ${user_id}`);
