@@ -5,6 +5,6 @@ module.exports = {
   usage: `${CONFIG.prefix}ping`,
   main: async (client, msg, hasArgs) => {
     const ping = Date.now() - msg.createdAt.getTime();
-    utils.sendResponse(msg, `Pong!\nMessages: \`${ping}ms\`\nClient: \`${Math.floor(client.ping)}ms\``, 'success');
+    utils.sendResponse(msg, `Pong!\nMessages: \`${ping}ms\`\nClient: \`${Math.floor(client.ws.ping)}ms\``, 'success');
   }
 };
