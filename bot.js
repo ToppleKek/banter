@@ -216,5 +216,10 @@ module.exports.client.on('error', (err) => {
 module.exports.client.on('disconnected', () => {
   console.log('[WARN] The client has disconnected');
 });
+
+process.on('unhandledRejection', (reason, p) => {
+  console.dir(p);
+  utils.logError(reason, p);
+});
 // -- END EVENTS --
 module.exports.client.login(CONFIG.token);

@@ -35,13 +35,13 @@ module.exports = {
               toCheck = message.content;
               break;
             case 1:
-              toCheck = message.content.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[*`_]/g, '');
+              toCheck = message.content.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[*`_​]/g, '');
               break;
             case 2:
-              toCheck = message.content.toLowerCase().replace(/\s/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[*`_]/g, '');
+              toCheck = message.content.toLowerCase().replace(/\s/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[*`_​]/g, '');
               break;
             default:
-              toCheck = message.content.toLowerCase().replace(/\s/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[*`_]/g, '');
+              toCheck = message.content.toLowerCase().replace(/\s/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[*`_​]/g, '');
           }
         } else {
           console.log(`[ERROR] conf is instanceof Error: ${conf} Guild: ${message.guild.name}`);

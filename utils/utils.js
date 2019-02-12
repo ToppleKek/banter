@@ -30,6 +30,21 @@ module.exports = {
     });
   },
 
+  logError(reason, p) {
+    mainModule.client.channels.get(CONFIG.errorChan).send({embed: {
+      color: 11736341,
+      description: 'Unhandled Promise Rejection',
+      fields: [{
+        name: 'AT:',
+        value: `\`${p} :: ${p.name}\``
+      }, {
+        name: 'REASON:',
+        value: `\`\`\`${reason}\`\`\``,
+      }],
+      timestamp: new Date()
+    }});
+  },
+
   sendResponse(msg, message, type) { // will take "err", "info" or "success" for type
     let colour;
 
