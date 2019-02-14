@@ -36,7 +36,7 @@ module.exports = {
       description: 'Unhandled Promise Rejection',
       fields: [{
         name: 'AT:',
-        value: `\`${p} :: ${p.name}\``
+        value: `\`${p} :: See console for more details\``
       }, {
         name: 'REASON:',
         value: `\`\`\`${reason}\`\`\``,
