@@ -10,8 +10,6 @@ module.exports = {
     if (hasMR || hasMM) {
       let conf = await configTools.getConfig(msg.guild)
           .catch(err => console.log(err));
-      // if (!conf) conf = CONFIG.defaultConfig;
-      // conf = configTools.decodeConfig(conf);
       if (!(conf instanceof Error)) {
         const log = await utils.getActionChannel(msg.guild.id, 'log').catch(err => console.log(`[INFO] Purge check if in log channel failed: ${err}`));
         if (conf.logNoP && msg.channel.id === log) return utils.sendResponse(msg, 'Purging logs has been disabled in your servers configuration', 'err');
@@ -65,7 +63,7 @@ module.exports = {
           }
 
           msg.channel.bulkDelete(messages ? messages : (Number.parseInt(num, 10) + 1))
-              .then(messages => utils.writeToModlog(msg.guild.id, `bulk delete ${num} messages ${userTarget ? `from ${userTarget.tag}` : ''}`, reason, `#${msg.channel.name}`, false, msg.author))
+              .then(messages => utils.writeToModlog(msg.guild.id, `bulk delete ${userTarget ? `messages from ${userTarget.tag} in the last` : ''} ${num} messages`, reason, `#${msg.channel.name}`, false, msg.author))
               .catch(err => utils.sendResponse(msg, `Error deleting messages: ${err}`, 'err'));
         } else {
           utils.sendResponse(msg, `You must provide a number of messages to purge\nUsage: ${module.exports.usage}`, 'err');
