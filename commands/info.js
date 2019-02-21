@@ -44,12 +44,17 @@ module.exports = {
       value: utils.getMutualGuilds(target.user).join('\n').substring(0, 1000),
     });
 
+    let color;
+
+    if (msg.guild.member(target) && msg.guild.member(target).roles.color) color = msg.guild.member(target).roles.color.color;
+    else color = 0;
+
     const embed = {
       author: {
         name: `${target.user.tag} - User Info`,
         iconURL: target.user.avatarURL(),
       },
-      color: msg.guild.member(target) ? msg.guild.member(target).roles.color.color : 7506394,
+      color: color,
       description: `ID: ${target.user.id} Status: ${target.user.presence.status}`,
       fields: fields,
       thumbnail: {url: target.user.avatarURL({size:2048})},
