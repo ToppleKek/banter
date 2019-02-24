@@ -13,7 +13,7 @@ module.exports = {
       if (msg.content === `<@${client.user.id}> ${command}` || msg.content === `<@!${client.user.id}> ${command}`) hasArgs = false;
       let content = msg.content.split(' ');
       content.splice(0, 2);
-      msg.content = content.join(' ');
+      msg.content = content.join(' ').replace(/\s\s+/g, ' ');
       if (commands[command]) {
         try {
           commands[command].main(client, msg, hasArgs);
@@ -28,7 +28,7 @@ module.exports = {
       console.log(`COMMAND: ${command}`);
       let hasArgs = true;
       if (msg.content === CONFIG.prefix + command) hasArgs = false;
-      msg.content = msg.content.replace(`${CONFIG.prefix + command} `, '');
+      msg.content = msg.content.replace(`${CONFIG.prefix + command} `, '').replace(/\s\s+/g, ' ');
       if (commands[command]) {
         try {
           commands[command].main(client, msg, hasArgs);

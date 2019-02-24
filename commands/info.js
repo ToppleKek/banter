@@ -29,7 +29,7 @@ module.exports = {
 
     const fields = [{
         name: 'Creation Date',
-        value: target.user.createdAt.toString(),
+        value: target.user.createdAt ? target.user.createdAt.toString() : 'N/A',
       }];
 
     if (msg.guild.member(target)) {
@@ -41,7 +41,7 @@ module.exports = {
 
     fields.push({
       name: 'Seen on',
-      value: utils.getMutualGuilds(target.user).join('\n').substring(0, 1000),
+      value: utils.getMutualGuilds(target.user).length > 0 ? utils.getMutualGuilds(target.user).join('\n').substring(0, 1000) : 'No guilds',
     });
 
     let color;
