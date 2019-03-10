@@ -7,6 +7,7 @@ const loggingEventHandler = require('./events/loggingEventHandler.js');
 const guildConfigEventHandler = require('./events/guildConfigEventHandler.js');
 const blacklistEventHandler = require('./events/blacklistEventHandler.js');
 const starboardEventHandler = require('./events/starboardEventHandler.js');
+const spamDetectionHandler = require('./events/spamDetectionHandler.js');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 const events = {
@@ -24,6 +25,7 @@ module.exports.db = new sqlite3.Database('./data.db', (err) => {
 
 module.exports.client = new Discord.Client({ autoReconnect: true, disableEveryone: true });
 module.exports.commands = {};
+module.exports.guilds = {};
 
 // -- FUNCTIONS --
 function loadCommands() {
@@ -141,6 +143,7 @@ module.exports.client.on('ready', () => {
 
 module.exports.client.on('message', msg => {
   blacklistEventHandler.message(null, msg);
+  spamDetectionHandler.message(msg);
   if (msg.content.startsWith(`<@${module.exports.client.user.id}>`) || msg.content.startsWith(`<@!${module.exports.client.user.id}>`)) {
     commandHandler.checkCommand(module.exports.client, module.exports.commands, msg, true);
   } else if (msg.content.startsWith(CONFIG.prefix)) {
@@ -175,11 +178,13 @@ module.exports.client.on('raw', async event => {
 
   module.exports.client.emit(events[event.t], reaction, user);
 });
+
 module.exports.client.on('messageReactionAdd', async (messageReaction, user) => {
     const starboard = await utils.getActionChannel(messageReaction.message.guild.id, 'starboard').catch(err => console.log(`[WARN] Starboard promise reject! Err: ${err}`));
     if (!starboard) return;
   starboardEventHandler.messageReactionAdd(messageReaction, user);
 });
+
 module.exports.client.on('messageReactionRemove', async (messageReaction, user) => {
     const starboard = await utils.getActionChannel(messageReaction.message.guild.id, 'starboard').catch(err => console.log(`[WARN] Starboard promise reject! Err: ${err}`));
     if (!starboard) return;

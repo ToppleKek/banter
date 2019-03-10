@@ -341,7 +341,7 @@ module.exports = {
                     embed: {
                       color: 1571692,
                       title: `Watch your step on ${guild.name}`,
-                      description: `You have been warned too many times! However, this srever has set no punishment for exceeding the warning limit...`,
+                      description: `You have been warned too many times! However, this server has set no punishment for exceeding the warning limit...`,
                       fields: [{
                         name: 'Warnings',
                         value: humanWarnings.join('\n').substring(0, 1000),

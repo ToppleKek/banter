@@ -24,6 +24,8 @@ function generateConfig() {
       "wmLen": Number.parseInt(document.getElementById('wmLen').value, 10),
       "wLim": Number.parseInt(document.getElementById('wLim').value, 10),
       "punish": Number.parseInt(document.getElementById('punishSel').value, 10),
+      "asMInRow": Number.parseInt(document.getElementById('asMInRow').value, 10),
+      "asCool": Number.parseInt(document.getElementById('asCool').value, 10)
     };
 
     const e = document.getElementById("b64string");
@@ -49,6 +51,9 @@ function loadConfig() {
       document.getElementById('wmLen').value = json.wmLen;
       document.getElementById('wLim').value = json.wLim;
       document.getElementById('punishSel').value = json.punish;
+      document.getElementById('asMInRow').value = json.asMInRow;
+      document.getElementById('asCool').value = json.asCool;
+
       switch (json.blLevel) {
         case 0:
           document.getElementById('blLevelLow').checked = true;
@@ -75,6 +80,9 @@ function findErrors() {
   const wmLenVal = document.getElementById('wmLen').value;
   const bmLenVal = document.getElementById('bmLen').value;
   const wLimVal = document.getElementById('wLim').value;
+  const asMInRow = document.getElementById('asMInRow').value;
+  const asCool = document.getElementById('asCool').value;
+
   // Good programming yes yes
   if (Number.isNaN(Number.parseInt(starRVal, 10))) errors.push({type:'num_is_NaN',message:'The star reaction requirement must be a number.'});
   if (Number.isNaN(Number.parseInt(wmLenVal, 10)))
@@ -85,7 +93,9 @@ function findErrors() {
   if (Number.parseInt(wmLenVal, 10) < 1 || Number.parseInt(wmLenVal, 10) > 1000) errors.push({type:'num_out_of_range',message:'The warning mute length must be between 1 and 1000'});
   if (Number.parseInt(bmLenVal, 10) < 1 || Number.parseInt(bmLenVal, 10) > 1000) errors.push({type:'num_out_of_range',message:'The blacklist mute length must be between 1 and 1000'});
   if (Number.parseInt(wLimVal, 10) < 1 || Number.parseInt(wLimVal, 10) > 50) errors.push({type:'num_out_of_range',message:'The warning limit must be between 1 and 50'});
-  
+  if (Number.parseInt(wLimVal, 10) < 1 || Number.parseInt(wLimVal, 10) > 50) errors.push({type:'num_out_of_range',message:'The warning limit must be between 1 and 50'});
+  if (Number.isNaN(Number.parseInt(asMInRow, 10))) errors.push({type:'num_is_NaN',message:'The amount of identical messages in a row must be a number'});
+  if (Number.isNaN(Number.parseInt(asCool, 10))) errors.push({type:'num_is_NaN',message:'The message cooldown must be a number'});
   return errors;
 }
 

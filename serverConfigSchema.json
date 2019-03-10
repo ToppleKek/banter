@@ -35,7 +35,17 @@
       "type": "number",
       "minimum": 1,
       "maximum": 50
+    },
+    "asMInRow": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "asCool": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 1000
     }
   },
-  "required": ["blShowInfractions", "blIgnoreAdmins", "logMassDelHaste", "blLevel", "logNoP", "logNoD", "starR", "bmLen", "wmLen", "punish", "wLim"]
+  "required": ["blShowInfractions", "blIgnoreAdmins", "logMassDelHaste", "blLevel", "logNoP", "logNoD", "starR", "bmLen", "wmLen", "punish", "wLim", "asMInRow", "asCool"]
 }

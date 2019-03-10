@@ -80,7 +80,7 @@ module.exports = {
               }
             } else if (m.content.toLowerCase().startsWith('delete')) {
               let args = m.content.split(' ');
-              if (!Number.isNaN(Number.parseInt(args[1], 10)) && Number.parseInt(args[1], 10) < pages.length) {
+              if (!Number.isNaN(Number.parseInt(args[1], 10)) && Number.parseInt(args[1], 10) <= pages.length) {
                 mainModule.db.run('DELETE FROM warnings WHERE row_id = ?', pages[page][args[1]].row_id, err => {
                   if (err) utils.sendResponse(msg, `SQL_ERROR: ${err}`, 'err');
                   else {
