@@ -7,6 +7,10 @@ module.exports = {
   message: async message => {
     if (!message.guild || message.author.bot) return;
 
+    const enabled = await utils.getAntiSpamEnabled(message.guild.id);
+
+    if (enabled === 0) return;
+
     let conf = await configTools.getConfig(message.guild)
         .catch(err => console.log(err));
 

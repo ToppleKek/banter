@@ -81,6 +81,16 @@ module.exports = {
     }); 
   },
 
+  getAntiSpamEnabled(guild_id) {
+    return new Promise((resolve, reject) => {
+      mainModule.db.get(`SELECT spam_filter_enabled FROM servers WHERE id = ${guild_id}`, (err, row) => {
+        if (err) reject(err);
+        else if (!row || !row.spam_filter_enabled) resolve(0);
+        else resolve(row.spam_filter_enabled);
+      });
+    }); 
+  },
+
   async checkPermission(usr, msg, type, realAdmin = false) {
     switch (type) {
       case 'admin':
