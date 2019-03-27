@@ -81,6 +81,9 @@ module.exports = {
                     });
                   }
                 }
+
+                if (member.roles.find(role => role.name === 'Muted')) return;
+                
                 utils.timedMute(member.user.id, member.guild.id, conf.bmLen * 60, true, mainModule.client.user, 'Word filter infraction', false, true);
                 utils.writeToModlog(guild.id, `timed mute for ${conf.bmLen} minutes`, 'word filter broken', member.user.tag, true, mainModule.client.user.tag, 0, fields);
                 member.createDM()
