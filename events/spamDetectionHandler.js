@@ -7,6 +7,13 @@ module.exports = {
   message: async message => {
     if (!message.guild || message.author.bot) return;
 
+    const ingoredChannels = await utils.getIgnoredChannels(message.guild.id, 'spam')
+                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+    if (ingoredChannels) {
+      const arr = ingoredChannels.split(' ');
+      if (arr.includes(message.channel.id)) return;
+    }
+
     const enabled = await utils.getAntiSpamEnabled(message.guild.id);
 
     if (enabled === 0) return;

@@ -3,7 +3,7 @@ const mainModule = require('../bot.js');
 const CONFIG = require('../config.json');
 module.exports = {
   help: 'Toggle ignore rules for channels',
-  usage: `${CONFIG.prefix}ignore <log|blacklist|starboard|all> #channel`,
+  usage: `${CONFIG.prefix}ignore <log|blacklist|starboard|spam|all> #channel`,
   main: async (client, msg, hasArgs) => {
     const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
     if (hasMR) {
@@ -77,10 +77,28 @@ module.exports = {
           newChannels = ccArrS.join(' ');
           mainModule.db.run(`UPDATE servers SET ignored_channels_starboard = ? WHERE id = ${msg.guild.id}`, newChannels, (err) => {
             if (err) {
-              utils.sendResponse(msg, `There was an error updating your starboard! The database may be configured incorrectly! Error: \`\`\`${err}\`\`\``, 'err');
+              utils.sendResponse(msg, `There was an error updating the channels that the bot will ignore for the starboard! The database may be configured incorrectly! Error: \`\`\`${err}\`\`\``, 'err');
             } else {
               utils.sendResponse(msg, `#${msg.guild.channels.get(channel).name} will ${rem ? 'no longer' : 'now'} be ignored by all starboard events`, 'success');
               utils.writeToModlog(msg.guild.id, `channel ${rem ? 'no longer' : ''} ignored for starboard events`, 'N/A', msg.guild.channels.get(channel).name, false, msg.author);
+            }
+          });
+          break;
+        case 'spam':
+          let ccArrSpam;
+          if (currentChannelsStarboard) ccArrSpam = currentChannelsStarboard.split(' ');
+          else ccArrSpam = [];
+          rem = false;
+          if (ccArrSpam.includes(channel)) rem = true;
+          if (rem) ccArrSpam.splice(ccArrSpam.indexOf(channel, 1));
+          else ccArrSpam.push(channel);
+          newChannels = ccArrSpam.join(' ');
+          mainModule.db.run(`UPDATE servers SET ignored_channels_spam = ? WHERE id = ${msg.guild.id}`, newChannels, (err) => {
+            if (err) {
+              utils.sendResponse(msg, `There was an error updating the channels that the bot will ignore for the anti spam! The database may be configured incorrectly! Error: \`\`\`${err}\`\`\``, 'err');
+            } else {
+              utils.sendResponse(msg, `#${msg.guild.channels.get(channel).name} will ${rem ? 'no longer' : 'now'} be ignored by all anti spam events`, 'success');
+              utils.writeToModlog(msg.guild.id, `channel ${rem ? 'no longer' : ''} ignored for anti spam events`, 'N/A', msg.guild.channels.get(channel).name, false, msg.author);
             }
           });
           break;

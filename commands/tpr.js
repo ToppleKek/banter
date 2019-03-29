@@ -13,7 +13,7 @@ module.exports = {
           let selfRoles = await utils.getSelfRoles(msg.guild.id).catch(e => utils.sendResponse(msg, `[SQL_ERROR] In await: \`${e}\` <--- if this is null, ignore`, 'err')); 
           let existingRoles = [];
           let rem = false;
-          const roleToAdd = msg.guild.roles.find(role => role.name === msg.content);
+          const roleToAdd = msg.guild.roles.find(role => role.name.toLowerCase() === msg.content.toLowerCase());
           const rolePos = roleToAdd.position;
           const authorPos = utils.getHighestRolePos(msg.guild.id, msg.author);
           if (rolePos >= authorPos) return utils.sendResponse(msg, 'That role is higher or equal to your highest role. You may only add roles under you to the list of public roles', 'err');
@@ -24,7 +24,7 @@ module.exports = {
           mainModule.db.run(`UPDATE servers SET selfroles = ? WHERE id = ${msg.guild.id}`, existingRoles.join(' '), err => {
             if (err) return utils.sendResponse(msg, `[SQL_ERROR] In update: ${err}`, 'err');
             utils.writeToModlog(msg.guild.id, `role ${roleToAdd.name} is ${rem ? 'no longer public' : 'now public'}`, 'N/A', 'server', false, msg.author);
-            utils.sendResponse(msg, `${rem ? 'Removed' : 'Added'} ${roleToAdd.name} ${rem ? 'from' : 'to'} list of public roles`, 'success');
+            utils.sendResponse(msg, `${rem ? 'Removed' : 'Added'} ${roleToAdd.name} (${roleToAdd.id}) ${rem ? 'from' : 'to'} list of public roles`, 'success');
           });
         }
       } else {

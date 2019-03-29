@@ -315,7 +315,7 @@ module.exports = {
 
   getIgnoredChannels(guild_id, type = 'log') {
     return new Promise((resolve, reject) => {
-      if (!['log', 'blacklist', 'starboard'].includes(type)) reject('Invalid type');
+      if (!['log', 'blacklist', 'starboard', 'spam'].includes(type)) reject('Invalid type');
       mainModule.db.get(`SELECT ignored_channels_${type} FROM servers WHERE id = ?`, guild_id, (err, row) => {
         if (err) reject(err);
         else if (!row || !row[`ignored_channels_${type}`]) reject(null);

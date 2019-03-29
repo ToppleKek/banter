@@ -28,10 +28,10 @@ module.exports = {
       if (selfRoles.includes(roleToAdd.id)) {
         if (msg.guild.member(msg.author).roles.find(role => role.name === roleToAdd.name)) {
           await msg.guild.member(msg.author).roles.remove(roleToAdd).catch(err => utils.sendResponse(msg, `Failed to remove role: ${err}`, 'err'));
-          utils.sendResponse(msg, `You don't have the \`${roleToAdd.name}\` role anymore`, 'success');
+          utils.sendResponse(msg, `You don't have the \`${roleToAdd.name}\` (${roleToAdd.id}) role anymore`, 'success');
         } else {
           await msg.guild.member(msg.author).roles.add(roleToAdd).catch(err => utils.sendResponse(msg, `Failed to add role: ${err}`, 'err'));
-          utils.sendResponse(msg, `You now have the \`${roleToAdd.name}\` role`, 'success');
+          utils.sendResponse(msg, `You now have the \`${roleToAdd.name}\` (${roleToAdd.id}) role`, 'success');
         }
       } else {
         utils.sendResponse(msg, 'That role is not public', 'err');
