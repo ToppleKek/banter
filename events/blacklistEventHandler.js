@@ -7,7 +7,10 @@ module.exports = {
     if (!message.guild || message.author.bot) return;
     const guild = message.guild;
     const ingoredChannels = await utils.getIgnoredChannels(guild.id, 'blacklist')
-                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+                            .catch(e => {
+                              return;
+                            });
+                            
     if (ingoredChannels) {
       const arr = ingoredChannels.split(' ');
       if (arr.includes(message.channel.id)) return;
@@ -19,9 +22,9 @@ module.exports = {
     // if (!conf) conf = CONFIG.defaultConfig;
     // conf = configTools.decodeConfig(conf);
     if (!(conf instanceof Error)) {
-      console.log(`[DEBUG] Ignoring admins? ${conf.blIgnoreAdmins} Guild: ${guild.name}`);
       if (conf.blIgnoreAdmins && isAdmin) return;
     }
+
     mainModule.db.get(`SELECT blacklist FROM servers WHERE id = ${guild.id}`, async (err, row) => {
       if (err) return console.log(`[ERROR] blacklistEventHandler: message: ${err}`);
       if (row && row.blacklist) {
@@ -52,7 +55,6 @@ module.exports = {
         const wordsFound = [];
 
         for (let i = 0; i < bWords.length; i += 1) {
-          console.log(`[DEBUG] toCheck: ${toCheck}`);
           if (toCheck.includes(bWords[i])) {
             infractions.push(`Word \`${bWords[i]}\` found at index ${toCheck.indexOf(bWords[i])}`);
             wordsFound.push(bWords[i]);

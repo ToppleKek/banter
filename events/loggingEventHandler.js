@@ -6,7 +6,7 @@ module.exports = {
   channelCreate: async channel => {
     if (!channel.guild) return;
     const ingoredChannels = await utils.getIgnoredChannels(channel.guild.id)
-                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+                            .catch(err => {return});
     if (ingoredChannels) {
       const arr = ingoredChannels.split(' ');
       if (arr.includes(channel.id)) return;
@@ -37,7 +37,7 @@ module.exports = {
   channelDelete: async channel => {
     if (!channel.guild) return;
     const ingoredChannels = await utils.getIgnoredChannels(channel.guild.id)
-                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+                            .catch(err => {return});
     if (ingoredChannels) {
       const arr = ingoredChannels.split(' ');
       if (arr.includes(channel.id)) return;
@@ -172,7 +172,7 @@ module.exports = {
   messageDelete: async message => {
     if (!message.guild) return;
     const ingoredChannels = await utils.getIgnoredChannels(message.guild.id)
-                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+                            .catch(err => {return});
     if (ingoredChannels) {
       const arr = ingoredChannels.split(' ');
       if (arr.includes(message.channel.id)) return;
@@ -245,7 +245,7 @@ module.exports = {
   messageDeleteBulk: async messages => {
     if (messages.first().guild) {
       const ingoredChannels = await utils.getIgnoredChannels(messages.first().guild.id)
-                              .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+                              .catch(err => {return});
       if (ingoredChannels) {
         const arr = ingoredChannels.split(' ');
         if (arr.includes(messages.first().channel.id)) return;
@@ -310,7 +310,7 @@ module.exports = {
   messageUpdate: async (oldMessage, newMessage) => {
     if (!newMessage.guild) return;
     const ingoredChannels = await utils.getIgnoredChannels(newMessage.guild.id)
-                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+                            .catch(err => {return});
     if (ingoredChannels) {
       const arr = ingoredChannels.split(' ');
       if (arr.includes(newMessage.channel.id)) return;
@@ -402,7 +402,22 @@ module.exports = {
   channelUpdate: async (oldChannel, newChannel) => {
     if (newChannel.guild) {
       const ingoredChannels = await utils.getIgnoredChannels(newChannel.guild.id)
-                              .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+                              .catch(err => {return});
+
+      const statChannels = await utils.getStatChannels(newChannel.guild.id)
+                                 .catch(err => {
+                                    return;
+                                 });
+
+      const json = JSON.parse(statChannels);
+
+      for (let property in json) {
+        if (json.hasOwnProperty(property)) {
+          if (newChannel.id === json[property])
+            return;
+        }
+      }
+      
       if (ingoredChannels) {
         const arr = ingoredChannels.split(' ');
         if (arr.includes(newChannel.channel.id)) return;

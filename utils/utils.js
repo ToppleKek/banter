@@ -61,6 +61,17 @@ module.exports = {
     });
   },
 
+  // TODO: Make all of these one function
+  getStatChannels(guild_id) {
+    return new Promise((resolve, reject) => {
+      mainModule.db.get(`SELECT stat_chans FROM servers WHERE id = ${guild_id}`, (err, row) => {
+        if (err) reject(err);
+        else if (!row || !row.stat_chans) reject(null);
+        else resolve(row.stat_chans);
+      });
+    }); 
+  },
+
   getModRoles(guild_id) {
     return new Promise((resolve, reject) => {
       mainModule.db.get(`SELECT modroles FROM servers WHERE id = ${guild_id}`, (err, row) => {
@@ -94,7 +105,7 @@ module.exports = {
   async checkPermission(usr, msg, type, realAdmin = false) {
     switch (type) {
       case 'admin':
-        let modRoles = await module.exports.getModRoles(msg.guild.id).catch(e => console.log(`[DEBUG] Catch get modroles, this guild probably has none GUILD: ${msg.guild.name}  ERROR: ${e}`));
+        let modRoles = await module.exports.getModRoles(msg.guild.id).catch(err => {return});
         if (modRoles) modRoles = modRoles.split(' ');
         else return msg.guild.member(usr).permissions.has('ADMINISTRATOR');
         if (realAdmin) return msg.guild.member(usr).permissions.has('ADMINISTRATOR');

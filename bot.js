@@ -8,8 +8,10 @@ const guildConfigEventHandler = require('./events/guildConfigEventHandler.js');
 const blacklistEventHandler = require('./events/blacklistEventHandler.js');
 const starboardEventHandler = require('./events/starboardEventHandler.js');
 const spamDetectionHandler = require('./events/spamDetectionHandler.js');
+const statisticsEventHandler = require('./events/statisticsEventHandler.js');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
+const schedule = require('node-schedule');
 const events = {
   MESSAGE_REACTION_ADD: 'messageReactionAdd',
   MESSAGE_REACTION_REMOVE: 'messageReactionRemove',
@@ -152,10 +154,18 @@ module.exports.client.on('message', msg => {
 });
 
 module.exports.client.on('messageUpdate', (oldMessage, newMessage) => blacklistEventHandler.message(oldMessage, newMessage));
+
 module.exports.client.on('guildMemberAdd', member => {
   console.log('[INFO] guildMemberAddEvent');
+  statisticsEventHandler.guildMemberAdd(member);
+  statisticsEventHandler.dailyUserGain(member.guild);
   guildMemberAddEventHandler.event(module.exports.client, module.exports.db, member);
   loggingEventHandler.guildMemberAdd(member);
+});
+
+module.exports.client.on('guildMemberRemove', member => {
+  statisticsEventHandler.guildMemberRemove(member);
+  statisticsEventHandler.dailyUserLoss(member.guild);
 });
 
 module.exports.client.on('raw', async event => {
@@ -211,6 +221,8 @@ module.exports.client.on('messageDeleteBulk', messages                 => loggin
 // -- END LOGGING --
 
 //module.exports.client.on('presenceUpdate', (oldMember, newMember) => loggingEventHandler.presenceUpdate(oldMember, newMember));
+
+schedule.scheduleJob('0 0 * * *', statisticsEventHandler.resetDailyUsers);
 
 module.exports.client.on('error', (err) => {
   console.log('————— ERROR —————');

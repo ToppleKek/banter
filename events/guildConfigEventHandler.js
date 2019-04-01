@@ -2,7 +2,7 @@ const mainModule = require('../bot.js');
 module.exports = {
   guildCreate: guild => {
     console.log(`[INFO] Added to guild ${guild.name}`);
-    mainModule.db.run(`INSERT INTO servers VALUES(NULL, ?, '${guild.id}', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)`, guild.name, err => {
+    mainModule.db.run(`INSERT INTO servers VALUES(NULL, ?, '${guild.id}', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0)`, guild.name, err => {
       if (err) return console.log(err);
     });
   },

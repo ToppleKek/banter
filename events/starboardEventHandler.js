@@ -6,7 +6,7 @@ const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 module.exports = {
   messageReactionAdd: async (messageReaction, user) => {
     const ingoredChannels = await utils.getIgnoredChannels(messageReaction.message.guild.id, 'starboard')
-                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+                            .catch(err => {return});
     if (ingoredChannels) {
       const arr = ingoredChannels.split(' ');
       if (arr.includes(messageReaction.message.channel.id)) return;
@@ -130,7 +130,7 @@ module.exports = {
 
   messageReactionRemove: async (messageReaction, user) => {
     const ingoredChannels = await utils.getIgnoredChannels(messageReaction.message.guild.id, 'starboard')
-                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+                            .catch(err => {return});
     if (ingoredChannels) {
       const arr = ingoredChannels.split(' ');
       if (arr.includes(messageReaction.message.channel.id)) return;

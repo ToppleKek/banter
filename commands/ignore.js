@@ -20,12 +20,20 @@ module.exports = {
         utils.sendResponse(msg, `That channel does not exist on this guild.\nUsage: \`${module.exports.usage}\``, 'err');
         return;
       }
+      
       const currentChannelsLog = await utils.getIgnoredChannels(msg.guild.id, 'log')
-                              .catch(err => console.log(`[DEBUG] Failed to get ignored channels ${err}`));
+                              .catch(e => {
+                                return;
+                              });
       const currentChannelsBlacklist = await utils.getIgnoredChannels(msg.guild.id, 'blacklist')
-                              .catch(err => console.log(`[DEBUG] Failed to get ignored channels ${err}`));
+                              .catch(e => {
+                                return;
+                              });
       const currentChannelsStarboard = await utils.getIgnoredChannels(msg.guild.id, 'starboard')
-                              .catch(err => console.log(`[DEBUG] Failed to get ignored channels ${err}`));
+                              .catch(e => {
+                                return;
+                              });
+
       let rem = false;
       let newChannels;
 

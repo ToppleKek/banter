@@ -8,7 +8,7 @@ module.exports = {
     if (!message.guild || message.author.bot) return;
 
     const ingoredChannels = await utils.getIgnoredChannels(message.guild.id, 'spam')
-                            .catch(err => console.log(`[DEBUG] Failed to get ingoredChannels ${err}`));
+                            .catch(err => {return});
     if (ingoredChannels) {
       const arr = ingoredChannels.split(' ');
       if (arr.includes(message.channel.id)) return;

@@ -23,7 +23,7 @@ module.exports = {
         });
       }
       if (selfRoles.length < 1) utils.sendResponse(msg, `This server doesn\'t have any public roles`, 'err');
-      const roleToAdd = msg.guild.roles.find(role => role.name === msg.content);
+      const roleToAdd = msg.guild.roles.find(role => role.name.toLowerCase() === msg.content.toLowerCase());
       if (!roleToAdd) return utils.sendResponse(msg, `That role does not exist\nUsage: ${module.exports.usage}`, 'err');
       if (selfRoles.includes(roleToAdd.id)) {
         if (msg.guild.member(msg.author).roles.find(role => role.name === roleToAdd.name)) {
