@@ -409,12 +409,15 @@ module.exports = {
                                     return;
                                  });
 
-      const json = JSON.parse(statChannels);
+      let json;
+      if (statChannels) {
+        json = JSON.parse(statChannels);
 
-      for (let property in json) {
-        if (json.hasOwnProperty(property)) {
-          if (newChannel.id === json[property])
-            return;
+        for (let property in json) {
+          if (json.hasOwnProperty(property)) {
+            if (newChannel.id === json[property])
+              return;
+          }
         }
       }
       

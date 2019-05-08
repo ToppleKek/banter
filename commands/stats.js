@@ -43,7 +43,16 @@ module.exports = {
         },],
       });
 
-      const newestUser = await msg.guild.channels.create(`Newest User: N/A`, {
+      const newestUser = await msg.guild.channels.create(`Newest User:`, {
+        type: 'voice',
+        parent,
+        permissionOverwrites: [{
+          id: everyoneRole,
+          deny: ['CONNECT'],
+        },],
+      });
+
+      const newestUserEdit = await msg.guild.channels.create(`-> N/A`, {
         type: 'voice',
         parent,
         permissionOverwrites: [{
@@ -56,6 +65,7 @@ module.exports = {
       json.totalUsers = totalUsers.id;
       json.newestUser = newestUser.id;
       json.totalOnline = totalOnline.id;
+      json.newestUserEdit = newestUserEdit.id;
 
     }
     else {
@@ -66,6 +76,7 @@ module.exports = {
       const totalUsers = msg.guild.channels.find(channel => channel.id === json.totalUsers);
       const totalOnline = msg.guild.channels.find(channel => channel.id === json.newestUser);
       const newestUser = msg.guild.channels.find(channel => channel.id === json.newestUser);
+      const newestUserEdit = msg.guild.channels.find(channel => channel.id === json.newestUserEdit);
 
       if (totalUsers)
         totalUsers.delete();
@@ -75,6 +86,9 @@ module.exports = {
 
       if (totalOnline)
         totalOnline.delete();
+
+      if (newestUserEdit)
+        newestUserEdit.delete();
 
       if (parent)
         parent.delete();

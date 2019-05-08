@@ -37,6 +37,6 @@ module.exports = {
       } else {
         utils.sendResponse(msg, `You must provide a word to blacklist\nUsage:${module.exports.usage}\nNOTE: Multi-word blacklists should be made as 1 word`, 'err');
       }
-    } else utils.sendResponse(msg, 'You msut be an administrator to use this command', 'err');
+    } else utils.sendResponse(msg, 'You must be an administrator to use this command', 'err');
   }
 };

@@ -15,11 +15,11 @@ module.exports = {
     if (statChans) {
       if (member.guild) {
         const totalUsers = member.guild.channels.find(channel => channel.id === json.totalUsers);
-        const newestUser = member.guild.channels.find(channel => channel.id === json.newestUser);
+        const newestUserEdit = member.guild.channels.find(channel => channel.id === json.newestUserEdit);
 
         await totalUsers.edit({name: `Total Users: ${member.guild.memberCount}`});
 
-        await newestUser.edit({name: `Newest User: ${member.user.username}`.substring(0, 100)});
+        await newestUserEdit.edit({name: `-> ${member.user.username}`.substring(0, 100)});
       }
     }
   },
@@ -122,6 +122,26 @@ module.exports = {
           if (err)
             return console.log(`[ERR] resetDailyUsers: ${err}`);
         });
+      }
+    }
+  },
+
+  addNewChannel: async () => {
+    const arr = mainModule.client.guilds.array();
+
+    for (let i = 0; i < arr.length; i++) {
+      const statChans = await utils.getStatChannels(arr[i].id)
+                              .catch(e => {
+                                return;
+                              });
+
+      let json;
+
+      if (statChans) {
+        json = JSON.parse(statChans);
+        const newestUser = arr[i].channels.find(channel => channel.id === json.newestUser);
+
+        await newestUser.edit({name: `Newest User:`});
       }
     }
   }

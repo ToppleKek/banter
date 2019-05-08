@@ -338,6 +338,7 @@ module.exports = {
   issueWarning(user_id, guild_id, warning) {
     return new Promise(async (resolve, reject) => {
       const conf = await configTools.getConfig(mainModule.client.guilds.get(guild_id)).catch(err => console.log(err));
+      const member = mainModule.client.guilds.get(guild_id).member(warning.issuer);
       mainModule.db.run('INSERT INTO warnings VALUES(NULL, ?, ?, ?)', user_id, guild_id, JSON.stringify(warning), async e => {
         if (e) reject(e);
         const usr = await mainModule.client.users.fetch(user_id);
@@ -395,6 +396,9 @@ module.exports = {
                   resolve(true);
                   break;
                 case 2:
+                  if (!member.permissions.has('KICK_MEMBERS'))
+                    return console.log("SHIT PISS");
+
                   await dmChan.send({
                     embed: {
                       color: 1571692,
@@ -415,6 +419,8 @@ module.exports = {
                   resolve(true);
                   break;
               case 3:
+                if (!member.permissions.has('BAN_MEMBERS'))
+                  return;
                 await dmChan.send({
                   embed: {
                     color: 1571692,
