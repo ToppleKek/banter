@@ -6,9 +6,12 @@ module.exports = {
   usage: `${CONFIG.prefix}editor`,
   main: async (client, msg, hasArgs) => {
     mainModule.db.get(`SELECT config FROM servers WHERE id = ${msg.guild.id}`, (err, row) => {
-      if (err) return utils.sendResponse(msg, `SQL_ERROR: ${err}`, 'err');
-      else if (row && row.config) utils.sendResponse(msg, `https://editor.diddled.me/?cfg=${row.config}`, 'success');
-      else utils.sendResponse(msg, `https://editor.diddled.me`, 'success');
+      if (err)
+        return utils.sendResponse(msg, `SQL_ERROR: ${err}`, 'err');
+      else if (row && row.config)
+        utils.sendResponse(msg, `[Open Web Editor](https://editor.topplekek.xyz/?cfg=${row.config})`, 'success');
+      else
+        utils.sendResponse(msg, `[Open Web Editor](https://editor.topplekek.xyz/)`, 'success');
     });
   }
 };
