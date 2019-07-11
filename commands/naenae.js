@@ -12,16 +12,29 @@ module.exports = {
         const args = msg.content.split(' ');
         const userArg = args[0];
         let reason;
+
         if (args[1]) {
           args.shift();
           reason = args.join(' ');
-        }
+        } else
+          reason = 'No reason provided';
 
-        else reason = 'No reason provided';
-        if (userArg === '@everyone' || userArg === '@here') return utils.sendResponse(msg, 'What am I gonna do?! Mintz the server ***again***????', 'err');
-        if (msg.mentions.users.first()) target = msg.guild.member(msg.mentions.users.first());
-        else if (client.users.get(userArg)) target = msg.guild.member(client.users.get(userArg));
-        else return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
+        if (userArg === '@everyone' || userArg === '@here')
+          return utils.sendResponse(msg, 'What am I gonna do?! Mintz the server ***again***????', 'err');
+        if (msg.mentions.users.first())
+          target = msg.guild.member(msg.mentions.users.first());
+        
+        if (!target) {
+          let usr = await client.users.fetch(userArg).catch(err => utils.sendResponse(msg, `Failed to get user: ${err}`, 'err'));
+
+          if (usr && msg.guild.member(usr))
+            target = msg.guild.member(usr);
+          else if (usr)
+            return utils.sendResponse(msg, 'User not in guild! Please use hacknaenae', 'err');
+        } 
+
+        if (!target)
+          return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
 
         // Back by popular demand
         if (target.id === client.user.id) return utils.sendResponse(msg, 'Woah what am I gonna do naenae myself??!??', 'err');
