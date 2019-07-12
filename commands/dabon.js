@@ -19,9 +19,21 @@ module.exports = {
         else reason = 'No reason provided';
         console.log(userArg);
         if (userArg === '@everyone' || userArg === '@here') return utils.sendResponse(msg, 'What am I gonna do?! Mintz the server ***again***????', 'err');
-        if (msg.mentions.users.first()) target = msg.guild.member(msg.mentions.users.first());
-        else if (client.users.get(userArg)) target = msg.guild.member(client.users.get(userArg));
-        else return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
+        if (msg.mentions.users.first())
+          target = msg.guild.member(msg.mentions.users.first());
+        
+        if (!target) {
+          let usr = await client.users.fetch(userArg).catch(err => utils.sendResponse(msg, `Failed to get user: ${err}`, 'err'));
+
+          if (usr && msg.guild.member(usr))
+            target = msg.guild.member(usr);
+          else if (usr)
+            return utils.sendResponse(msg, 'User not in guild!', 'err');
+        } 
+
+        if (!target)
+          return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
+
 
         const targetPos = utils.getHighestRolePos(msg.guild.id, target);
         const authorPos = utils.getHighestRolePos(msg.guild.id, msg.author);
