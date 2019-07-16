@@ -61,6 +61,30 @@ module.exports = {
     });
   },
 
+  commandError(msg, type, message, usage) {
+    msg.channel.send({
+      embed: {
+        color: 11736341,
+        title: 'Command Error',
+        author: {
+          name: `Command executed by: ${msg.author.tag}`,
+          iconURL: msg.author.avatarURL() == null ? '' : msg.author.avatarURL()
+        },
+        timestamp: new Date(),
+        fields: [{
+          name: 'Error',
+          value: type
+        }, {
+          name: 'Info',
+          value: message
+        }, {
+          name: 'Correct Usage',
+          value: usage
+        }]
+      }
+    });
+  },
+
   // TODO: Make all of these one function
   getStatChannels(guild_id) {
     return new Promise((resolve, reject) => {
