@@ -1,56 +1,51 @@
 const utils = require('../utils/utils.js');
 const CONFIG = require('../config.json');
+
 module.exports = {
-  help: 'naenae (ban) a user from the server',
-  usage: `${CONFIG.prefix}naenae @someone reason for ban`,
-  main: async (client, msg, hasArgs) => {
-    const hasBAN = await utils.checkPermission(msg.author, msg, 'ban');
-    const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
-    if (hasMR || hasBAN) {
-      if (hasArgs) {
-        let target;
+    help: 'naenae (ban) a user from the server',
+    usage: `${CONFIG.prefix}naenae @someone reason for ban`,
+    main: async (client, msg, hasArgs) => {
+        if (!await utils.checkPermission(msg.author, msg, 'ban') || !await utils.checkPermission(msg.author, msg, 'admin'))
+          return utils.commandError(msg, 'Permission Error', 'You must have permission to ban members to execute this command', module.exports.usage);
+
+        if (!hasArgs)
+          return utils.commandError(msg, 'Argument Error', 'You must provide a mention or userID of the person you want to ban', module.exports.usage);
+        
+        msg.content = msg.content.replace(/\s+/g, ' ');
+
         const args = msg.content.split(' ');
         const userArg = args[0];
-        let reason;
+        let reason = 'No reason provided';
+        let target;
 
         if (args[1]) {
           args.shift();
           reason = args.join(' ');
-        } else
-          reason = 'No reason provided';
+        }
 
-        if (userArg === '@everyone' || userArg === '@here')
-          return utils.sendResponse(msg, 'What am I gonna do?! Mintz the server ***again***????', 'err');
-        if (msg.mentions.users.first())
+        if (msg.mentions.users.first() && !msg.guild.member(msg.mentions.users.first()))
+          return utils.commandError(msg, 'Argument Error', 'The user specified does not exist in the guild (Guild.member returned null)', module.exports.usage);
+        else if (msg.mentions.users.first() && msg.guild.member(msg.mentions.users.first()))
           target = msg.guild.member(msg.mentions.users.first());
-        
+
         if (!target) {
-          let usr = await client.users.fetch(userArg).catch(err => utils.sendResponse(msg, `Failed to get user: ${err}`, 'err'));
+          target = await client.users.fetch(userArg).catch(err => 
+            utils.commandError(msg, 'Argument Error', `"${userArg}" is not a valid user (err: ${err})`, module.exports.usage));
 
-          if (usr && msg.guild.member(usr))
-            target = msg.guild.member(usr);
-          else if (usr)
-            return utils.sendResponse(msg, 'User not in guild! Please use hacknaenae', 'err');
-        } 
+          if (!target)
+            return;
+          else if (!msg.guild.member(target))
+            return utils.commandError(msg, 'Argument Error', 'The user specified does not exist in the guild (Guild.member returned null)', module.exports.usage);
 
-        if (!target)
-          return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
+          target = msg.guild.member(target);
+        }
 
-        // Back by popular demand
-        if (target.id === client.user.id) return utils.sendResponse(msg, 'Woah what am I gonna do naenae myself??!??', 'err');
-        else if (target.id === CONFIG.ownerid) return utils.sendResponse(msg, 'I\'m not gonna naenae the god!!!!!!', 'err');
-        else if (target.id === msg.guild.ownerID) return utils.sendResponse(msg, 'Damn that persons the owner no naenae', 'err');
+        if ((utils.getHighestRolePos(msg.guild.id, target) >= utils.getHighestRolePos(msg.guild.id, msg.author)) && msg.author.id !== msg.guild.ownerID)
+          return utils.commandError(msg, 'Permission Error', `${target.user.tag} has a higher or equal role. You also cannot naenae yourself`, module.exports.usage);
 
-        const targetPos = utils.getHighestRolePos(msg.guild.id, target);
-        const authorPos = utils.getHighestRolePos(msg.guild.id, msg.author);
-        const targetUsr = target.user;
+        const chan = await target.createDM().catch(err => utils.sendResponse(msg, 'Warning: Cannot send direct messages to the target user', 'info'));
 
-        if (targetPos >= authorPos && msg.author.id !== msg.guild.ownerID) utils.sendResponse(msg, `${targetUsr.tag} has a higher or equal role. You also cannot naenae yourself`, 'err');
-        else if (!target.bannable) utils.sendResponse(msg, `Missing permissions to naenae ${targetUsr.tag}`, 'err');
-        else {
-          const chan = await target.createDM().catch(err => {
-            utils.sendResponse(msg, `Failed to create DM with ${targetUsr.tag} with error ${err}, trying to ban anyway`, 'info');
-          });
+        if (chan && target.bannable) {
           await chan.send({
             embed: {
               color: 1571692,
@@ -58,35 +53,23 @@ module.exports = {
               description: `They banned you for \`${reason}\``,
               timestamp: new Date(),
             }
-          }).catch(err => {
-            utils.sendResponse(msg, `Failed to DM ${targetUsr.tag} with error ${err}, trying to ban anyway`, 'info');
-          });
-
-          target.ban({days: 0, reason: reason})
-              .then(member => {
-                utils.writeToModlog(msg.guild.id, 'naenae (ban)', reason, targetUsr.tag, false, msg.author);
-                msg.channel.send({
-                  embed: {
-                    color: 1571692,
-                    title: `${targetUsr.tag} JUST GOT NAENAED`,
-                    description: 'GET FRICKED KIDDO',
-                    thumbnail: {
-                      url: 'https://images-ext-2.discordapp.net/external/hHfWlFdQbHi0JXTdaed_3iGwULt6vXXLohlGFEe56oo/https/cdn.discordapp.com/attachments/242345022719000595/352625339891056640/lmao.gif',
-                    },
-                    timestamp: new Date(),
-                  }
-                })
-              })
-              .catch(err => {
-                utils.sendResponse(msg, `Failed to naenae. Error: ${err}`, 'err');
-              });
+          }).catch(err => utils.sendResponse(msg, `Warning: Failed to DM user: ${err}`, 'info'));
         }
-      }
-      else {
-        utils.sendResponse(msg, `You must provide a mention or a userID to naenae!\nUsage: ${module.exports.usage}`, 'err');
-      }
-    } else {
-      utils.sendResponse(msg, 'You must have permission to ban members to execute this command', 'err');
+
+        if (!await target.ban({days: 0, reason: reason}).catch(err => utils.sendResponse(msg, `Could not ban ${target.user.tag}! Error: ${err}`, 'err')))
+            return;
+
+        utils.writeToModlog(msg.guild.id, 'naenaed (ban)', reason, target.user.tag, false, msg.author);
+        msg.channel.send({
+          embed: {
+            color: 1571692,
+            title: `${target.user.tag} JUST GOT NAENAED`,
+            description: 'GET FRICKED KIDDO',
+            thumbnail: {
+              url: 'https://images-ext-2.discordapp.net/external/hHfWlFdQbHi0JXTdaed_3iGwULt6vXXLohlGFEe56oo/https/cdn.discordapp.com/attachments/242345022719000595/352625339891056640/lmao.gif',
+            },
+            timestamp: new Date(),
+          }
+        });
     }
-  }
 };
