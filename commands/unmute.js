@@ -13,8 +13,10 @@ module.exports = {
         const userArg = args[0];
         let target;
 
-        if (msg.mentions.users.first()) target = msg.guild.member(msg.mentions.users.first());
-        else if (client.users.get(userArg)) target = msg.guild.member(client.users.get(userArg));
+        if (msg.mentions.users.first())
+          target = await msg.guild.members.fetch(msg.mentions.users.first()).catch(err => {return});
+        else if (client.users.get(userArg))
+          target = await msg.guild.members.fetch(client.users.get(userArg)).catch(err => {return});
         else {
           utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
           return;

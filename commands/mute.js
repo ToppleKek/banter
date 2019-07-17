@@ -12,8 +12,10 @@ module.exports = {
         const args = msg.content.split(' ');
         let target;
 
-        if (msg.mentions.users.first()) target = msg.guild.member(msg.mentions.users.first());
-        else return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
+        if (msg.mentions.users.first())
+          target = await msg.guild.members.fetch(msg.mentions.users.first()).catch(err => {return});
+        else
+          return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
 
         let mentionIndex = utils.regexIndexOf(args, /<@!?(1|\d{17,19})>/);
         let time;
