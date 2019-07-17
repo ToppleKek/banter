@@ -23,10 +23,10 @@ module.exports = {
           reason = args.join(' ');
         }
 
-        if (msg.mentions.users.first() && !msg.guild.member(msg.mentions.users.first()))
+        if (msg.mentions.users.first() && !await msg.guild.members.fetch(msg.mentions.users.first()).catch(err => {return}))
           return utils.commandError(msg, 'Argument Error', 'The user specified does not exist in the guild (Guild.member returned null)', module.exports.usage);
-        else if (msg.mentions.users.first() && msg.guild.member(msg.mentions.users.first()))
-          target = msg.guild.member(msg.mentions.users.first());
+        else if (msg.mentions.users.first() && await msg.guild.members.fetch(msg.mentions.users.first()).catch(err => utils.commandError(msg, 'Internal Error', `Failed to get guild member object for target: ${err}`)))
+          target = await msg.guild.members.fetch(msg.mentions.users.first()).catch(err => {return});
 
         if (!target) {
           target = await client.users.fetch(userArg).catch(err => 
@@ -34,10 +34,10 @@ module.exports = {
 
           if (!target)
             return;
-          else if (!msg.guild.member(target))
+          else if (!await msg.guild.members.fetch(target).catch(err => {return}))
             return utils.commandError(msg, 'Argument Error', 'The user specified does not exist in the guild (Guild.member returned null)', module.exports.usage);
 
-          target = msg.guild.member(target);
+          target = await msg.guild.members.fetch(target);
         }
 
         if ((utils.getHighestRolePos(msg.guild.id, target) >= utils.getHighestRolePos(msg.guild.id, msg.author)) && msg.author.id !== msg.guild.ownerID)
