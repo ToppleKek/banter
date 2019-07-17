@@ -310,9 +310,14 @@ module.exports = {
   async getMutualGuilds(user) {
     const clientGuilds = mainModule.client.guilds.array();
     const mutualGuilds = [];
+    let member;
 
     for (let i = 0; i < clientGuilds.length; i += 1) {
-      if (await clientGuilds[i].members.fetch(user).catch(err => {return})) mutualGuilds.push(clientGuilds[i]);
+      member = await clientGuilds[i].members.fetch(user).catch (err => {return});
+      console.log(member);
+
+      if (member)
+        mutualGuilds.push(clientGuilds[i]);
     }
 
     return mutualGuilds;

@@ -40,7 +40,7 @@ module.exports = {
           target = await msg.guild.members.fetch(target);
         }
 
-        if ((utils.getHighestRolePos(msg.guild.id, target) >= utils.getHighestRolePos(msg.guild.id, msg.author)) && msg.author.id !== msg.guild.ownerID)
+        if ((await utils.getHighestRolePos(msg.guild.id, target) >= await utils.getHighestRolePos(msg.guild.id, msg.author)) && msg.author.id !== msg.guild.ownerID)
           return utils.commandError(msg, 'Permission Error', `${target.user.tag} has a higher or equal role. You also cannot naenae yourself`, module.exports.usage);
 
         const chan = await target.createDM().catch(err => utils.sendResponse(msg, 'Warning: Cannot send direct messages to the target user', 'info'));

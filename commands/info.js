@@ -25,7 +25,10 @@ module.exports = {
       target = msg.author;
     }
 
-    target = await msg.guild.members.fetch(target).catch(err => {return}) ? await msg.guild.members.fetch(target) : {user:target};
+    target = await msg.guild.members.fetch(target).catch(err => {return});
+
+    if (!target)
+      target = {user:target};
 
     const fields = [{
         name: 'Creation Date',
@@ -39,9 +42,10 @@ module.exports = {
       });
     }
 
+    const guilds = await utils.getMutualGuilds(target.user);
     fields.push({
       name: 'Seen on',
-      value: utils.getMutualGuilds(target.user).length > 0 ? utils.getMutualGuilds(target.user).join('\n').substring(0, 1000) : 'No guilds',
+      value: guilds.length > 0 ? guilds.join('\n').substring(0, 1000) : 'No guilds',
     });
 
     let color;
