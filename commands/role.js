@@ -12,15 +12,21 @@ module.exports = {
         const userArg = args[0];
         let target;
 
-        if (msg.mentions.users.first()) target = msg.guild.member(msg.mentions.users.first());
-        else if (client.users.get(userArg)) target = msg.guild.member(client.users.get(userArg));
+        if (msg.mentions.users.first())
+          target = await msg.guild.members.fetch(msg.mentions.users.first()).catch(err => {return});
+
+        else if (await client.users.fetch(userArg).catch(err => {return}))
+          target = await msg.guild.members.fetch(await client.users.fetch(userArg).catch(err => {return})).catch(err => {return});
         else return utils.sendResponse(msg, `Invalid user\nUsage: ${module.exports.usage}`, 'err');
 
         args.shift();
         const roleName = args.join(' ');
 
         if (!msg.guild.roles.find(role => role.name === roleName)) return utils.sendResponse(msg, `Role not found: ${roleName}`, 'err');
-        if (msg.guild.roles.find(role => role.name === roleName).position >= msg.guild.member(msg.author).roles.highest.position) return utils.sendResponse(msg, 'That role is higher or equal to your highest role', 'err');
+
+        const authorMember = await msg.guild.members.fetch(msg.author).catch(err => {return});
+
+        if ((msg.guild.roles.find(role => role.name === roleName).position >= authorMember.roles.highest.position) && msg.author.id !== msg.guild.ownerID) return utils.sendResponse(msg, 'That role is higher or equal to your highest role', 'err');
 
         if (target.roles.find(role => role.name === roleName)) {
           target.roles.remove(msg.guild.roles.find(role => role.name === roleName))
