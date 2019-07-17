@@ -25,14 +25,14 @@ module.exports = {
       target = msg.author;
     }
 
-    target = msg.guild.member(target) ? msg.guild.member(target) : {user:target};
+    target = await msg.guild.members.fetch(target).catch(err => {return}) ? await msg.guild.members.fetch(target) : {user:target};
 
     const fields = [{
         name: 'Creation Date',
         value: target.user.createdAt ? target.user.createdAt.toString() : 'N/A',
       }];
 
-    if (msg.guild.member(target)) {
+    if (await msg.guild.members.fetch(target).catch(err => {return})) {
       fields.push({
         name: 'Guild Join Date',
         value: target.joinedAt.toString(),
@@ -45,8 +45,8 @@ module.exports = {
     });
 
     let color;
-
-    if (msg.guild.member(target) && msg.guild.member(target).roles.color) color = msg.guild.member(target).roles.color.color;
+    const member = await msg.guild.members.fetch(target).catch(err => {return});
+    if (member && member.roles.color) color = member.roles.color.color;
     else color = 0;
 
     const embed = {

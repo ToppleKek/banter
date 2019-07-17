@@ -127,28 +127,33 @@ module.exports = {
   },
 
   async checkPermission(usr, msg, type, realAdmin = false) {
+    const member = await msg.guild.members.fetch(usr).catch(err => {return});
+    
+    if (!member)
+      return false;
+
     switch (type) {
       case 'admin':
         let modRoles = await module.exports.getModRoles(msg.guild.id).catch(err => {return});
         if (modRoles) modRoles = modRoles.split(' ');
-        else return msg.guild.member(usr).permissions.has('ADMINISTRATOR');
-        if (realAdmin) return msg.guild.member(usr).permissions.has('ADMINISTRATOR');
+        else return member.permissions.has('ADMINISTRATOR');
+        if (realAdmin) return member.permissions.has('ADMINISTRATOR');
         for (let i = 0; i < modRoles.length; i += 1) {
-          if (msg.guild.member(usr).roles.get(modRoles[i])) return true;
+          if (member.roles.get(modRoles[i])) return true;
         }
-        return msg.guild.member(usr).permissions.has('ADMINISTRATOR');
+        return member.permissions.has('ADMINISTRATOR');
       case 'server':
-        return msg.guild.member(usr).permissions.has('MANAGE_GUILD');
+        return member.permissions.has('MANAGE_GUILD');
       case 'ban':
-        return msg.guild.member(usr).permissions.has('BAN_MEMBERS');
+        return member.permissions.has('BAN_MEMBERS');
       case 'kick':
-        return msg.guild.member(usr).permissions.has('KICK_MEMBERS');
+        return member.permissions.has('KICK_MEMBERS');
       case 'roles':
-        return msg.guild.member(usr).permissions.has('MANAGE_ROLES');
+        return member.permissions.has('MANAGE_ROLES');
       case 'messages':
-        return msg.guild.member(usr).permissions.has('MANAGE_MESSAGES');
+        return member.permissions.has('MANAGE_MESSAGES');
       case 'owner':
-        return msg.guild.member(usr).id === CONFIG.ownerid;
+        return member.id === CONFIG.ownerid;
       default:
         return false;
     }
@@ -226,16 +231,18 @@ module.exports = {
     });
   },
 
-  getHighestRolePos(guildID, usr) {
-    return mainModule.client.guilds.get(guildID).member(usr).roles.highest.position;
+  async getHighestRolePos(guildID, usr) {
+    const member = await mainModule.client.guilds.get(guildID).members.fetch(usr).catch(err => {return});
+    return member ? member.roles.highest.position : 0;
   },
 
-  timedMute(userID, guildID, secs, auto, author, reason = 'No reason specified', writeToMLFirst = true, writeToMLSecond = true) {
-    mainModule.db.run(`INSERT INTO muted VALUES(NULL, "${userID}", "${guildID}")`, err => {
+  async timedMute(userID, guildID, secs, auto, author, reason = 'No reason specified', writeToMLFirst = true, writeToMLSecond = true) {
+    mainModule.db.run(`INSERT INTO muted VALUES(NULL, "${userID}", "${guildID}")`, async err => {
       const guildObj = mainModule.client.guilds.get(guildID);
       if (err) return console.log(err);
       else {
-        guildObj.member(userID).roles.add(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute')
+        let member = await guildObj.members.fetch(userID).catch(err => {return});
+        member.roles.add(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute')
           .then(member => {
             console.log(`[INFO] Timed mute started for user ${userID} on guild ${guildID} for ${secs} seconds`);
             if (writeToMLFirst) {
@@ -245,10 +252,11 @@ module.exports = {
                 module.exports.writeToModlog(guildID, `timed mute for ${secs / 60} minutes`, reason, mainModule.client.users.get(userID).tag, false, author);
               }
             }
-            setTimeout(() => {
+            setTimeout(async () => {
               mainModule.db.run(`DELETE FROM muted WHERE user_id = "${userID}" AND guild_id = "${guildID}"`);
-              if (mainModule.client.guilds.get(guildID) && mainModule.client.guilds.get(guildID).member(userID) && guildObj.member(userID).roles.find(role => role.name === 'Muted')) {
-                guildObj.member(userID).roles.remove(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute end')
+              member = await mainModule.client.guilds.get(guildID).members.fetch(userID).catch(err => {return});
+              if (mainModule.client.guilds.get(guildID) && member && member.roles.find(role => role.name === 'Muted')) {
+                member.roles.remove(guildObj.roles.find(role => role.name === 'Muted'), 'Timed mute end')
                   .catch(err => {
                     console.log(`[ERROR] Rejected promise in guild ${guildID} from timed mute ending: ${err}`);
                   });
@@ -271,12 +279,17 @@ module.exports = {
     })
   },
 
-  permaMute(userID, guildID, auto, author, reason = 'No reason specified', writeToML = true) {
-    mainModule.db.run(`INSERT INTO muted VALUES(NULL, "${userID}", "${guildID}")`, err => {
+  async permaMute(userID, guildID, auto, author, reason = 'No reason specified', writeToML = true) {
+    mainModule.db.run(`INSERT INTO muted VALUES(NULL, "${userID}", "${guildID}")`, async err => {
       const guildObj = mainModule.client.guilds.get(guildID);
       if (err) return console.log(err);
       else {
-        guildObj.member(userID).roles.add(guildObj.roles.find(role => role.name === 'Muted'), 'Permanent mute from bot')
+        const member = await guildObj.members.fetch(userID).catch(err => {return});
+
+        if (!member)
+          return;
+
+        member.roles.add(guildObj.roles.find(role => role.name === 'Muted'), 'Permanent mute from bot')
           .then(member => {
             console.log(`[INFO] Muted user ${userID} on guild ${guildID}`);
             if (writeToML) {
@@ -294,12 +307,12 @@ module.exports = {
     })
   },
 
-  getMutualGuilds(user) {
+  async getMutualGuilds(user) {
     const clientGuilds = mainModule.client.guilds.array();
     const mutualGuilds = [];
 
     for (let i = 0; i < clientGuilds.length; i += 1) {
-      if (clientGuilds[i].member(user)) mutualGuilds.push(clientGuilds[i]);
+      if (await clientGuilds[i].members.fetch(user).catch(err => {return})) mutualGuilds.push(clientGuilds[i]);
     }
 
     return mutualGuilds;
@@ -359,10 +372,10 @@ module.exports = {
     });
   },
 
-  issueWarning(user_id, guild_id, warning) {
+  async issueWarning(user_id, guild_id, warning) {
     return new Promise(async (resolve, reject) => {
       const conf = await configTools.getConfig(mainModule.client.guilds.get(guild_id)).catch(err => console.log(err));
-      const member = mainModule.client.guilds.get(guild_id).member(warning.issuer);
+      const member = await mainModule.client.guilds.get(guild_id).members.fetch(warning.issuer);
       mainModule.db.run('INSERT INTO warnings VALUES(NULL, ?, ?, ?)', user_id, guild_id, JSON.stringify(warning), async e => {
         if (e) reject(e);
         const usr = await mainModule.client.users.fetch(user_id);
@@ -381,6 +394,12 @@ module.exports = {
                 const warningObj = JSON.parse(rows[i].warning);
                 humanWarnings.push(`${i} - ${issuer.tag}: ${warningObj.message}`);
               }
+              
+              const member = await guild.members.fetch(usr).catch(err => {return});
+
+              if (!member)
+                return;
+
               switch (conf.punish) {
                 case 0:
                   dmChan.send({
@@ -435,7 +454,7 @@ module.exports = {
                       timestamp: new Date(),
                   }}).catch(err => console.log(`[ERROR] failed to dm user: ${err}`));
                   module.exports.writeToModlog(guild_id, 'kick', 'user exceeded warning limit', usr.tag, true, mainModule.client.user);
-                  await guild.member(usr).kick( {reason: 'user exceeded warning limit'} ).catch(err => console.log(`[ERROR] Failed to kick user: ${err}`));
+                  await member.kick( {reason: 'user exceeded warning limit'} ).catch(err => console.log(`[ERROR] Failed to kick user: ${err}`));
                   mainModule.db.run('DELETE FROM warnings WHERE user_id = ? AND guild_id = ?', user_id, guild_id, err => {
                     if (err) reject(err);
                     else console.log(`[INFO] Deleted rows because someone was punished for warnings user_id: ${user_id}`);
@@ -457,7 +476,7 @@ module.exports = {
                     timestamp: new Date(),
                 }}).catch(err => console.log(`[ERROR] failed to dm user: ${err}`));
                 module.exports.writeToModlog(guild_id, 'ban', 'user exceeded warning limit', usr.tag, true, mainModule.client.user);
-                await guild.member(usr).ban( {days: 0, reason: 'user exceeded warning limit'} ).catch(err => console.log(`[ERROR] Failed to ban user: ${err}`));
+                await member.ban( {days: 0, reason: 'user exceeded warning limit'} ).catch(err => console.log(`[ERROR] Failed to ban user: ${err}`));
                 mainModule.db.run('DELETE FROM warnings WHERE user_id = ? AND guild_id = ?', user_id, guild_id, err => {
                   if (err) reject(err);
                   else console.log(`[INFO] Deleted rows because someone was punished for warnings user_id: ${user_id}`);
