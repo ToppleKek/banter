@@ -12,6 +12,7 @@ module.exports = {
           return utils.commandError(msg, 'Argument Error', 'You must provide a mention or userID of the person you want to ban', module.exports.usage);
         
         msg.content = msg.content.replace(/\s+/g, ' ');
+        msg.content = msg.content.trim();
 
         const args = msg.content.split(' ');
         const userArg = args[0];

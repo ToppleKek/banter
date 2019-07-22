@@ -9,6 +9,9 @@ module.exports = {
       if (!hasArgs) return utils.sendResponse(msg, `Invalid syntax\nUsage: ${module.exports.usage}`, 'err');
 
       const userRegex = RegExp('^((?!<@>).)[0-9]{17,19}$');
+      msg.content = msg.content.replace(/\s+/g, ' ');
+      msg.content = msg.content.trim();
+
       const args = msg.content.split(' ');
       const usrArg = args[0];
       const userObj = userRegex.test(usrArg) ? await client.users.fetch(usrArg).catch(err => console.log(err)) : null;
