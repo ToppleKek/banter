@@ -17,7 +17,10 @@ module.exports = {
             target = msg.author;
           });
 
-      if (usrFoundFromID) target = usrFoundFromID;
+      if (usrFoundFromID)
+        target = usrFoundFromID;
+
+      console.dir(target.avatarURL());
     }
 
     else {
@@ -25,17 +28,22 @@ module.exports = {
       target = msg.author;
     }
 
-    target = await msg.guild.members.fetch(target).catch(err => {return});
+    let mTarget = await msg.guild.members.fetch(target).catch(err => {return});
 
-    if (!target)
+    if (!mTarget)
       target = {user:target};
+    else
+      target = mTarget;
+
+    const avatarURL = target.user.avatarURL({size:2048});
+    const status = target.user.presence.status;
 
     const fields = [{
         name: 'Creation Date',
         value: target.user.createdAt ? target.user.createdAt.toString() : 'N/A',
       }];
 
-    if (await msg.guild.members.fetch(target).catch(err => {return})) {
+    if (mTarget) {
       fields.push({
         name: 'Guild Join Date',
         value: target.joinedAt.toString(),
@@ -49,19 +57,19 @@ module.exports = {
     });
 
     let color;
-    const member = await msg.guild.members.fetch(target).catch(err => {return});
+    const member = mTarget;
     if (member && member.roles.color) color = member.roles.color.color;
     else color = 0;
 
     const embed = {
       author: {
         name: `${target.user.tag} - User Info`,
-        iconURL: target.user.avatarURL(),
+        iconURL: avatarURL,
       },
       color: color,
-      description: `ID: ${target.user.id} Status: ${target.user.presence.status}`,
+      description: `ID: ${target.user.id} Status: ${status}`,
       fields: fields,
-      thumbnail: {url: target.user.avatarURL({size:2048})},
+      thumbnail: {url: avatarURL},
     };
 
     msg.channel.send({embed});
