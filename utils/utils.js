@@ -1,5 +1,5 @@
 const CONFIG = require('../config.json');
-const fs = require('fs');
+const fs = require('fs-extra');
 const mainModule = require('../bot.js');
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 const configTools = require('./configTools.js');
@@ -124,6 +124,89 @@ module.exports = {
         else resolve(row.spam_filter_enabled);
       });
     }); 
+  },
+
+  getVanityURL(guild) {
+    return new Promise((resolve, reject) => {
+      mainModule.db.get(`SELECT vanity_url FROM servers WHERE id = ${guild.id}`, (err, row) => {
+        if (err)
+          resolve(null);
+        else if
+          (!row || !row.vanity_url)
+        resolve(null);
+        else
+          resolve(row.vanity_url);
+      });
+    }); 
+  },
+
+  getVanityURLCode(guild) {
+    return new Promise((resolve, reject) => {
+      mainModule.db.get(`SELECT vanity_invite FROM servers WHERE id = ${guild.id}`, (err, row) => {
+        if (err)
+          resolve(null);
+        else if
+          (!row || !row.vanity_invite)
+        resolve(null);
+        else
+          resolve(row.vanity_invite);
+      });
+    }); 
+  },
+
+  getAllVanityURLS() {
+    return new Promise((resolve, reject) => {
+      mainModule.db.all('SELECT vanity_url FROM servers', (err, rows) => {
+        const urls = [];
+
+        for (let i = 0; i < rows.length; i++)
+          if (!err && rows && rows[i].vanity_url)
+            urls.push(rows[i].vanity_url);
+
+        resolve(urls);
+      });
+    });
+  },
+
+  changeVanityURL(guild, vanity, invite) {
+    return new Promise(async (resolve, reject) => {
+      const urls = await module.exports.getAllVanityURLS();
+
+      console.dir(urls);
+
+      if (urls.includes(vanity))
+        resolve(null);
+
+      const currentURL = await module.exports.getVanityURL(guild);
+
+      if (currentURL !== null)
+        await fs.remove(`${CONFIG.httpDir}/${currentURL}`);
+
+      await fs.mkdir(`${CONFIG.httpDir}/${vanity}`).catch(err => resolve(null));
+      await fs.appendFile(`${CONFIG.httpDir}/${vanity}/.htaccess`, `Redirect 301 /${vanity} https://discord.gg/${invite}\n`).catch(err => resolve(null));
+
+      mainModule.db.run(`UPDATE servers SET vanity_url = ?, vanity_invite = ? WHERE id = ?`, vanity, invite, guild.id, err => {
+        if (err)
+          console.dir(err);
+      });
+
+      resolve(`${CONFIG.rootDomain}/${vanity}`);
+    });
+  },
+
+  deleteVanityURL(guild) {
+    return new Promise(async (resolve, reject) => {
+      const vanity = await module.exports.getVanityURL(guild);
+
+      mainModule.db.run(`UPDATE servers SET vanity_url = NULL, vanity_invite = NULL WHERE id = ?`, guild.id, err => {
+        if (err)
+          console.dir(err);
+      });
+
+      await fs.remove(`${CONFIG.httpDir}/${vanity}`);
+
+      resolve(true);
+    });
   },
 
   async checkPermission(usr, msg, type, realAdmin = false) {
