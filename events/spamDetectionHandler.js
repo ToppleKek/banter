@@ -110,7 +110,8 @@ module.exports = {
         }
       }
 
-      mainModule.guilds[member.guild.id].joins.users.push(member.user.id);
+      if (!mainModule.guilds[member.guild.id].joins.users[member.user.id])
+        mainModule.guilds[member.guild.id].joins.users.push(member.user.id);
 
       let joins = mainModule.guilds[member.guild.id].joins;
 
