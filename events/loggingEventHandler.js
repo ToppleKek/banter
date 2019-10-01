@@ -184,10 +184,13 @@ module.exports = {
         // if (!conf) conf = CONFIG.defaultConfig;
         // conf = configTools.decodeConfig(conf);
         if (!(conf instanceof Error) && conf.logNoD) {
-          message.guild.fetchAuditLogs().then(audit =>{
+          message.guild.fetchAuditLogs().then(async audit => {
             const embed = {};
-            console.log(`${audit.entries.first().action} - ${audit.entries.first().target.id} - ${message.embeds[0]}`);
-            if (audit.entries.first().action === 'MESSAGE_DELETE' && audit.entries.first().target.id === mainModule.client.user.id && message.embeds[0]) {
+            
+            if (audit.entries.first().action === 'MESSAGE_DELETE' &&
+                audit.entries.first().target.id === mainModule.client.user.id &&
+                message.embeds[0] &&
+                !await utils.isWhitelisted(message.guild, message.guild.member(audit.entries.first().executor), 'logAntiDelete')) {
               embed.color = 11736341;
               embed.title = 'Someone may have tried to delete logs';
               embed.description = `${audit.entries.first().executor.tag} may have tried to delete a message in logs! Trying to recover and resend in the next message`;

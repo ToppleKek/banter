@@ -85,7 +85,67 @@ module.exports = {
     });
   },
 
+  async isWhitelisted(guild, member, type) {
+    const whitelist = JSON.parse(await module.exports.getDBItem(guild, 'whitelist'));
+
+    if (!whitelist)
+      return false;
+
+    const roles = member.roles.array();
+
+    for (let i = 0; i < roles.length; i++)
+      if (whitelist[roles[i].id] && whitelist[roles[i].id][type])
+        return true;
+
+    if (whitelist[member.user.id] && whitelist[member.user.id][type])
+      return true;
+
+    return false;
+  },
+
+  async getCustomPermission(guild, member, command) {
+    const perms = JSON.parse(await module.exports.getDBItem(guild, 'perms'));
+
+    if (!perms)
+      return null;
+
+    const roles = member.roles.array();
+
+    for (let i = 0; i < roles.length; i++)
+      if (perms[roles[i].id] && perms[roles[i].id][command])
+        return perms[roles[i].id][command];
+
+    if (perms[member.user.id] && perms[member.user.id][command])
+      return perms[member.user.id][command];
+
+    return null;
+  },
+
   // TODO: Make all of these one function
+  getDBItem(guild, item) {
+    return new Promise((resolve, reject) => {
+      mainModule.db.get(`SELECT ${item} FROM servers WHERE id = ?`, guild.id, (err, row) => {
+        if (err)
+          resolve(null);
+        else if (!row || !row[item])
+          resolve(null);
+        else
+          resolve(row[item]);
+      });
+    });
+  },
+
+  setDBItem(guild, item, value) {
+    return new Promise((resolve, reject) => {
+      mainModule.db.run(`UPDATE servers SET ${item} = ? WHERE id = ?`, value, guild.id, err => {
+        if (err)
+          resolve(false);
+      });
+
+      resolve(true);
+    });
+  },
+
   getStatChannels(guild_id) {
     return new Promise((resolve, reject) => {
       mainModule.db.get(`SELECT stat_chans FROM servers WHERE id = ${guild_id}`, (err, row) => {
@@ -211,8 +271,17 @@ module.exports = {
 
   async checkPermission(usr, msg, type, realAdmin = false) {
     const member = await msg.guild.members.fetch(usr).catch(err => {return});
+
+    console.log('DEBUG: checkPermission: ' + msg.command);
     
     if (!member)
+      return false;
+
+    const perm = await module.exports.getCustomPermission(msg.guild, msg.guild.member(msg.author), msg.command);
+
+    if (perm === 'allow')
+      return true;
+    else if (perm === 'deny')
       return false;
 
     switch (type) {

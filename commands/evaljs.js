@@ -5,9 +5,11 @@ const atob = require('atob');
 const btoa = require('btoa');
 const { exec } = require('child_process');
 const configTools = require('../utils/configTools.js');
+
 module.exports = {
   help: 'Evaluate JavaScript (Bot owner only)',
   usage: `${CONFIG.prefix}evaljs code`,
+  unmanageable: true,
   main: async (client, msg, hasArgs) => {
     const hasMR = await utils.checkPermission(msg.author, msg, 'owner');
     if (hasMR) {

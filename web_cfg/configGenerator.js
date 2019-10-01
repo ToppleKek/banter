@@ -25,7 +25,13 @@ function generateConfig() {
       "wLim": Number.parseInt(document.getElementById('wLim').value, 10),
       "punish": Number.parseInt(document.getElementById('punishSel').value, 10),
       "asMInRow": Number.parseInt(document.getElementById('asMInRow').value, 10),
-      "asCool": Number.parseInt(document.getElementById('asCool').value, 10)
+      "asCool": Number.parseInt(document.getElementById('asCool').value, 10),
+      "prefix": document.getElementById('prefix').value,
+      "aBotMInRow":Number.parseInt(document.getElementById('aBotMInRow').value, 10),
+      "aBotCool": Number.parseInt(document.getElementById('aBotCool').value, 10),
+      "aBotTCool": Number.parseInt(document.getElementById('aBotTCool').value, 10),
+      "asPing": Number.parseInt(document.getElementById('asPing').value, 10),
+      "asPCool": Number.parseInt(document.getElementById('asPCool').value, 10)
     };
 
     const e = document.getElementById("b64string");
@@ -53,6 +59,11 @@ function loadConfig() {
       document.getElementById('punishSel').value = json.punish;
       document.getElementById('asMInRow').value = json.asMInRow;
       document.getElementById('asCool').value = json.asCool;
+      document.getElementById('aBotMInRow').value = json.aBotMInRow;
+      document.getElementById('aBotCool').value = json.aBotCool;
+      document.getElementById('aBotTCool').value = json.aBotTCool;
+      document.getElementById('asPing').value = json.asPing;
+      document.getElementById('asPCool').value = json.asPCool;
 
       switch (json.blLevel) {
         case 0:
@@ -82,20 +93,62 @@ function findErrors() {
   const wLimVal = document.getElementById('wLim').value;
   const asMInRow = document.getElementById('asMInRow').value;
   const asCool = document.getElementById('asCool').value;
+  const aBotMInRow = document.getElementById('aBotMInRow').value;
+  const aBotCool = document.getElementById('aBotCool').value;
+  const aBotTCool = document.getElementById('aBotTCool').value;
+  const asPing = document.getElementById('asPing').value;
+  const asPCool = document.getElementById('asPCool').value;
 
   // Good programming yes yes
-  if (Number.isNaN(Number.parseInt(starRVal, 10))) errors.push({type:'num_is_NaN',message:'The star reaction requirement must be a number.'});
+  if (Number.isNaN(Number.parseInt(starRVal, 10)))
+    errors.push({type:'num_is_NaN',message:'The star reaction requirement must be a number.'});
+
   if (Number.isNaN(Number.parseInt(wmLenVal, 10)))
-    if (document.getElementById('punishSel').value !== "1") errors.push({type:'num_is_NaN',message:'The warning mute length must be a number.'});
-  if (Number.isNaN(Number.parseInt(bmLenVal, 10))) errors.push({type:'num_is_NaN',message:'The blacklist mute length must be a number.'});
-  if (Number.isNaN(Number.parseInt(wLimVal, 10))) errors.push({type:'num_is_NaN',message:'The warning limit must be a number.'});
-  if (Number.parseInt(starRVal, 10) < 1 || Number.parseInt(starRVal, 10) > 50) errors.push({type:'num_out_of_range',message:'The star reaction requirement must be between 1 and 50'});
-  if (Number.parseInt(wmLenVal, 10) < 1 || Number.parseInt(wmLenVal, 10) > 1000) errors.push({type:'num_out_of_range',message:'The warning mute length must be between 1 and 1000'});
-  if (Number.parseInt(bmLenVal, 10) < 1 || Number.parseInt(bmLenVal, 10) > 1000) errors.push({type:'num_out_of_range',message:'The blacklist mute length must be between 1 and 1000'});
-  if (Number.parseInt(wLimVal, 10) < 1 || Number.parseInt(wLimVal, 10) > 50) errors.push({type:'num_out_of_range',message:'The warning limit must be between 1 and 50'});
-  if (Number.parseInt(wLimVal, 10) < 1 || Number.parseInt(wLimVal, 10) > 50) errors.push({type:'num_out_of_range',message:'The warning limit must be between 1 and 50'});
-  if (Number.isNaN(Number.parseInt(asMInRow, 10))) errors.push({type:'num_is_NaN',message:'The amount of identical messages in a row must be a number'});
-  if (Number.isNaN(Number.parseInt(asCool, 10))) errors.push({type:'num_is_NaN',message:'The message cooldown must be a number'});
+    if (document.getElementById('punishSel').value !== "1")
+      errors.push({type:'num_is_NaN',message:'The warning mute length must be a number.'});
+
+  if (Number.isNaN(Number.parseInt(bmLenVal, 10)))
+    errors.push({type:'num_is_NaN',message:'The blacklist mute length must be a number.'});
+
+  if (Number.isNaN(Number.parseInt(wLimVal, 10)))
+    errors.push({type:'num_is_NaN',message:'The warning limit must be a number.'});
+
+  if (Number.parseInt(starRVal, 10) < 1 || Number.parseInt(starRVal, 10) > 50)
+    errors.push({type:'num_out_of_range',message:'The star reaction requirement must be between 1 and 50'});
+
+  if (Number.parseInt(wmLenVal, 10) < 1 || Number.parseInt(wmLenVal, 10) > 1000)
+    errors.push({type:'num_out_of_range',message:'The warning mute length must be between 1 and 1000'});
+
+  if (Number.parseInt(bmLenVal, 10) < 1 || Number.parseInt(bmLenVal, 10) > 1000)
+    errors.push({type:'num_out_of_range',message:'The blacklist mute length must be between 1 and 1000'});
+
+  if (Number.parseInt(wLimVal, 10) < 1 || Number.parseInt(wLimVal, 10) > 50)
+    errors.push({type:'num_out_of_range',message:'The warning limit must be between 1 and 50'});
+
+  if (Number.parseInt(wLimVal, 10) < 1 || Number.parseInt(wLimVal, 10) > 50)
+    errors.push({type:'num_out_of_range',message:'The warning limit must be between 1 and 50'});
+
+  if (Number.isNaN(Number.parseInt(asMInRow, 10)))
+    errors.push({type:'num_is_NaN',message:'The amount of identical messages in a row must be a number'});
+
+  if (Number.isNaN(Number.parseInt(asCool, 10)))
+    errors.push({type:'num_is_NaN',message:'The message cooldown must be a number'});
+
+  if (Number.isNaN(Number.parseInt(aBotMInRow, 10)))
+    errors.push({type:'num_is_NaN',message:'The amount of new users in a row must be a number'});
+
+  if (Number.isNaN(Number.parseInt(aBotCool, 10)))
+    errors.push({type:'num_is_NaN',message:'The new user cooldown must be a number'});
+
+  if (Number.isNaN(Number.parseInt(aBotTCool, 10)))
+    errors.push({type:'num_is_NaN',message:'The time after anti raid cooldown must be a number'});
+
+  if (Number.isNaN(Number.parseInt(asPing, 10)))
+    errors.push({type:'num_is_NaN',message:'The number of pings must be a number'});
+
+  if (Number.isNaN(Number.parseInt(asPCool, 10)))
+    errors.push({type:'num_is_NaN',message:'The cooldown time for pings must be a number'});
+
   return errors;
 }
 

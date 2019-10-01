@@ -6,6 +6,7 @@ const mainModule = require('../bot.js');
 module.exports = {
   help: 'Execute a command as another user (Bot owner only)',
   usage: `${CONFIG.prefix}sudo @someone naenae(...)`,
+  unmanageable: true,
   main: async (client, msg, hasArgs) => {
     const hasMR = await utils.checkPermission(msg.author, msg, 'owner');
     if (hasMR) {

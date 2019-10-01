@@ -2,6 +2,7 @@ const CONFIG = require('./config.json');
 const Discord = require('discord.js');
 const commandHandler = require('./utils/commandHandler.js');
 const utils = require('./utils/utils.js');
+const configTools = require('./utils/configTools.js');
 const guildMemberAddEventHandler = require('./events/guildMemberAdd.js');
 const loggingEventHandler = require('./events/loggingEventHandler.js');
 const guildConfigEventHandler = require('./events/guildConfigEventHandler.js');
@@ -28,6 +29,7 @@ module.exports.db = new sqlite3.Database('./data.db', (err) => {
 module.exports.client = new Discord.Client({ autoReconnect: true, disableEveryone: true });
 module.exports.commands = {};
 module.exports.guilds = {};
+module.exports.locks = {};
 
 // -- FUNCTIONS --
 function loadCommands() {
@@ -44,33 +46,50 @@ function loadCommands() {
 // -- COMMANDS --
 module.exports.commands.help = {};
 module.exports.commands.help.help = 'Displays this list';
-module.exports.commands.help.usage = `${CONFIG.prefix}help <command>`;
-module.exports.commands.help.main = (client, msg, hasArgs) => {
-  if (!hasArgs) {
-    const cmds = [];
-    for (const command in module.exports.commands) cmds.push(`**${CONFIG.prefix}${command}** - ${module.exports.commands[command].help}`);
+module.exports.commands.help.usage = `${CONFIG.prefix}help <command>|<page#>`;
+module.exports.commands.help.main = async (client, msg, hasArgs) => {
+  let page = 1;
+  const pages = [];
+  const cmds = [];
+  const conf = await configTools.getConfig(msg.guild)
+        .catch(err => console.log(`[ERROR] bot:help:Failed to get config ${err}`));
 
-    const embed = {
-      color: 0xED5228,
-      title: 'List of commands',
-      description: `Prefix: \`${CONFIG.prefix}\` You may also mention me as a prefix.\n\n${cmds.join('\n')}`,
-      timestamp: new Date(),
-    };
-    msg.channel.send('', { embed }).catch(err => utils.sendResponse(msg, `ERROR: ${err}`, 'err'));
-  } else {
-    try {
-      let usage;
-      if (module.exports.commands[msg.content].usage) usage = module.exports.commands[msg.content].usage;
-      else usage = 'No usage info';
-      utils.sendResponse(msg, `**${msg.content}** - ${module.exports.commands[msg.content].help}\n**Usage:** ${usage}`, 'info');
-    } catch (err) {
-      utils.sendResponse(msg, 'Command not found', 'err');
+  for (const command in module.exports.commands)
+    cmds.push(`**${conf.prefix.length > 0 ? conf.prefix : CONFIG.prefix}${command}** - ${module.exports.commands[command].help}`);
+  
+  while (cmds.length)
+    pages.push(cmds.splice(0, 20));
+
+  if (hasArgs) {
+    if (Number.isNaN(Number.parseInt(msg.content, 10))) {
+      try {
+        let usage;
+        if (module.exports.commands[msg.content].usage) usage = module.exports.commands[msg.content].usage;
+        else usage = 'No usage info';
+        return utils.sendResponse(msg, `**${msg.content}** - ${module.exports.commands[msg.content].help}\n**Usage:** ${usage}`, 'info');
+      } catch (err) {
+        return utils.sendResponse(msg, 'Command not found', 'err');
+      }
+    } else {
+      page = Number.parseInt(msg.content, 10);
+
+      if ((page > pages.length) || (page < 1))
+        return utils.commandError(msg, 'Argument Error', 'Invalid page', module.exports.commands.help.usage);     
     }
   }
+
+  const embed = {
+    color: 0xED5228,
+    title: 'List of commands',
+    description: `${conf.prefix.length > 0 ? `Custom Prefix: \`${conf.prefix}\`\nFallback` : ''} Prefix: \`${CONFIG.prefix}\` You may also mention me as a prefix.\nShowing page: (${page}/${pages.length}) Change with ${CONFIG.prefix}help <page#> \n\n${pages[page - 1].join('\n')}`,
+    timestamp: new Date(),
+  };
+  msg.channel.send('', { embed }).catch(err => utils.sendResponse(msg, `ERROR: ${err}`, 'err'));
 };
 
 module.exports.commands.load = {};
 module.exports.commands.load.help = 'Load a command from ./commands/';
+module.exports.commands.load.unmanageable = true;
 module.exports.commands.load.main = async (client, msg, hasArgs) => {
   const hasMR = await utils.checkPermission(msg.author, msg, 'owner');
   if (hasMR) {
@@ -92,6 +111,7 @@ module.exports.commands.load.main = async (client, msg, hasArgs) => {
 
 module.exports.commands.unload = {};
 module.exports.commands.unload.help = 'Unload a loaded command';
+module.exports.commands.unload.unmanageable = true;
 module.exports.commands.unload.main = async (client, msg, hasArgs) => {
   const hasMR = await utils.checkPermission(msg.author, msg, 'owner');
   if (hasMR) {
@@ -117,6 +137,7 @@ module.exports.commands.unload.main = async (client, msg, hasArgs) => {
 
 module.exports.commands.reload = {};
 module.exports.commands.reload.help = 'Reloads a loaded command';
+module.exports.commands.reload.unmanageable = true;
 module.exports.commands.reload.main = async (client, msg, hasArgs) => {
   const hasMR = await utils.checkPermission(msg.author, msg, 'owner');
   if (hasMR) {
@@ -143,14 +164,22 @@ module.exports.client.on('ready', () => {
   console.log(`Ready. \nClient: ${module.exports.client.user.tag}\nOwner: ${module.exports.client.users.get(CONFIG.ownerid).tag}\nServers: ${module.exports.client.guilds.array().length}`);
 });
 
-module.exports.client.on('message', msg => {
+module.exports.client.on('message', async msg => {
   blacklistEventHandler.message(null, msg);
   spamDetectionHandler.message(msg);
-  if (msg.content.startsWith(`<@${module.exports.client.user.id}>`) || msg.content.startsWith(`<@!${module.exports.client.user.id}>`)) {
+
+  let conf;
+  
+  if (msg.guild)
+    conf = await configTools.getConfig(msg.guild)
+          .catch(err => console.log(`[ERROR] bot:message:Failed to get config ${err}`));
+
+  if (msg.content.startsWith(`<@${module.exports.client.user.id}>`) || msg.content.startsWith(`<@!${module.exports.client.user.id}>`))
     commandHandler.checkCommand(module.exports.client, module.exports.commands, msg, true);
-  } else if (msg.content.startsWith(CONFIG.prefix)) {
-    commandHandler.checkCommand(module.exports.client, module.exports.commands, msg, false);
-  }
+  else if (conf && conf.prefix.length > 0 && msg.content.startsWith(conf.prefix))
+    commandHandler.checkCommand(module.exports.client, module.exports.commands, msg, false, conf.prefix);
+  else if (msg.content.startsWith(CONFIG.prefix))
+    commandHandler.checkCommand(module.exports.client, module.exports.commands, msg, false, CONFIG.prefix);
 });
 
 module.exports.client.on('messageUpdate', (oldMessage, newMessage) => blacklistEventHandler.message(oldMessage, newMessage));
@@ -161,6 +190,7 @@ module.exports.client.on('guildMemberAdd', member => {
   statisticsEventHandler.dailyUserGain(member.guild);
   guildMemberAddEventHandler.event(module.exports.client, module.exports.db, member);
   loggingEventHandler.guildMemberAdd(member);
+  spamDetectionHandler.guildMemberAdd(member);
 });
 
 module.exports.client.on('guildMemberRemove', member => {

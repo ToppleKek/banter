@@ -11,7 +11,7 @@ module.exports = {
       else if (row && row.config)
         utils.sendResponse(msg, `[Open Web Editor](https://editor.topplekek.xyz/?cfg=${row.config})`, 'success');
       else
-        utils.sendResponse(msg, `[Open Web Editor](https://editor.topplekek.xyz/)`, 'success');
+        utils.sendResponse(msg, `[Open Web Editor](https://editor.topplekek.xyz/?cfg=${CONFIG.defaultConfig})`, 'success');
     });
   }
 };

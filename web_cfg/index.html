@@ -30,7 +30,7 @@
       <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav">
             <a class="nav-item nav-link active" href="https://editor.diddled.me/manual.html">Manual</a>
-            <a class="nav-item nav-link" href="https://discordapp.com/oauth2/authorize?client_id=282876393254289418&permissions=8&scope=bot">Invite</a>
+            <a class="nav-item nav-link" href="https://discordapp.com/api/oauth2/authorize?client_id=585206442152296450&permissions=8&scope=bot">Invite</a>
         </div>
       </div>
     </nav>
@@ -68,13 +68,46 @@
                 <h2>Anti Spam</h2>
                 <div id="antispam">
                     <form>
-                        Amount of identical messages in a row until anti spam is triggered:
+                        Amount of identical messages in a row until anti spam is triggered: (0 == disabled)
                         <br>
                         <input type="text" id="asMInRow">
                         <br>
                         Cooldown between messages in seconds:
                         <br>
                         <input type="text" id="asCool">
+                    </form>
+                </div>
+            </div>
+            <div class="col">
+                <h2>Anti Raid</h2>
+                <!-- AKA anti bot -->
+                <div id="antiraid">
+                    <form>
+                        Amount of new users in a row until anti raid is triggered: (0 == disabled)
+                        <br>
+                        <input type="text" id="aBotMInRow">
+                        <br>
+                        Cooldown period after first join:
+                        <br>
+                        <input type="text" id="aBotCool">
+                        <br>
+                        Time in seconds after the anti raid has been triggered to keep muting:
+                        <br>
+                        <input type="text" id="aBotTCool">
+                    </form>
+                </div>
+            </div>
+            <div class="col">
+                <h2>Anti Ping</h2>
+                <div id="antiping">
+                    <form>
+                        Amount of pings allowed within cooldown timeframe: (0 == disabled)
+                        <br>
+                        <input type="text" id="asPing">
+                        <br>
+                        Cooldown period:
+                        <br>
+                        <input type="text" id="asPCool">
                     </form>
                 </div>
             </div>
@@ -119,10 +152,21 @@
                         </form>
                     </div>
                 </div>
+                <div class="col" style="text-align: center; overflow-wrap: break-word;">
+                    <h2>Commands</h2>
+                    <div id="commands" style="text-align: center; overflow-wrap: break-word;">
+                        <p>Custom Prefix:</p>
+                        <p><small>You can always use the default prefix as a fallback</small></p>
+                        <input type="text" id="prefix">
+                        <br>
+                        <br>
+                    </div>
+                </div>
         </div>
         <div class="row">
             <div class="w-100"></div>
             <div class="col">
+                <br>
                 <div style="text-align: center; overflow-wrap: break-word;">
                     <button onclick="generateConfig()">Generate Config Command</button>
                 </div>

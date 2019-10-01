@@ -3,7 +3,7 @@ const mainModule = require('../bot.js');
 const CONFIG = require('../config.json');
 module.exports = {
   help: 'Disable a channel action',
-  usage: `${CONFIG.prefix}disable <log|modlog|starboard>`,
+  usage: `${CONFIG.prefix}disable <log|modlog|starboard|system>`,
   main: async (client, msg, hasArgs) => {
     const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
     if (hasMR) {
@@ -28,6 +28,7 @@ module.exports = {
                 }
               });
               break;
+
             case 'modlog':
               if (!row.modlog) {
                 utils.sendResponse(msg, 'Logging of moderator actions is already disabled', 'err');
@@ -42,6 +43,7 @@ module.exports = {
                 }
               });
               break;
+
             case 'starboard':
               if (!row.starboard) {
                 utils.sendResponse(msg, 'Starboard is already disabled', 'err');
@@ -56,6 +58,22 @@ module.exports = {
                 }
               });
               break;
+
+            case 'system':
+              if (!row.starboard) {
+                utils.sendResponse(msg, 'System channel is already disabled', 'err');
+                return;
+              }
+              mainModule.db.run(`UPDATE servers SET system = NULL WHERE id = ${msg.guild.id}`, (err) => {
+                if (err) {
+                  utils.sendResponse(msg, `There was an error updating your system channel! The database may be configured incorrectly! Error: \`\`\`${err}\`\`\``, 'err');
+                } else {
+                  utils.sendResponse(msg, `Disabled system channel on this server`, 'success');
+                  utils.writeToModlog(msg.guild.id, 'system channel disabled', 'N/A', 'server', false, msg.author);
+                }
+              });
+              break;
+
             default:
               utils.sendResponse(msg, `Invalid type.\nUsage: \`${module.exports.usage}\``, 'err');
           }

@@ -38,14 +38,64 @@
     },
     "asMInRow": {
       "type": "number",
-      "minimum": 1,
+      "minimum": 0,
       "maximum": 100
     },
     "asCool": {
       "type": "number",
-      "minimum": 1,
+      "minimum": 0,
       "maximum": 1000
+    },
+    "prefix": {
+      "type": "string",
+      "minLen": 0,
+      "maxLen": 50
+    },
+    "aBotMInRow": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10000 
+    },
+    "aBotCool": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10000 
+    },
+    "aBotTCool": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10000 
+    },
+    "asPing": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "asPCool": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10000
     }
   },
-  "required": ["blShowInfractions", "blIgnoreAdmins", "logMassDelHaste", "blLevel", "logNoP", "logNoD", "starR", "bmLen", "wmLen", "punish", "wLim", "asMInRow", "asCool"]
+  "required": [
+    "blShowInfractions",
+    "blIgnoreAdmins",
+    "logMassDelHaste",
+    "blLevel",
+    "logNoP",
+    "logNoD",
+    "starR",
+    "bmLen",
+    "wmLen",
+    "punish",
+    "wLim",
+    "asMInRow",
+    "asCool",
+    "prefix",
+    "aBotMInRow",
+    "aBotCool",
+    "aBotTCool",
+    "asPing",
+    "asPCool"
+  ]
 }

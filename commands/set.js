@@ -3,7 +3,7 @@ const mainModule = require('../bot.js');
 const CONFIG = require('../config.json');
 module.exports = {
   help: 'Set your servers channel config',
-  usage: `${CONFIG.prefix}set <log|modlog|starboard> #channel`,
+  usage: `${CONFIG.prefix}set <log|modlog|starboard|system> #channel`,
   main: async (client, msg, hasArgs) => {
     const hasMR = await utils.checkPermission(msg.author, msg, 'admin');
     if (hasMR) {
@@ -32,6 +32,7 @@ module.exports = {
             }
           });
           break;
+
         case 'modlog':
           mainModule.db.run(`UPDATE servers SET modlog = ${channel} WHERE id = ${msg.guild.id}`, (err) => {
             if (err) {
@@ -42,6 +43,7 @@ module.exports = {
             }
           });
           break;
+
         case 'starboard':
           mainModule.db.run(`UPDATE servers SET starboard = ${channel} WHERE id = ${msg.guild.id}`, (err) => {
             if (err) {
@@ -52,6 +54,18 @@ module.exports = {
             }
           });
           break;
+
+        case 'system':
+          mainModule.db.run(`UPDATE servers SET system = ${channel} WHERE id = ${msg.guild.id}`, (err) => {
+            if (err) {
+              utils.sendResponse(msg, `There was an error updating your system channel! The database may be configured incorrectly! Error: \`\`\`${err}\`\`\``, 'err');
+            } else {
+              utils.sendResponse(msg, `Set ${msg.guild.name}'s system channel to ${msg.guild.channels.get(channel).name}`, 'success');
+              utils.writeToModlog(msg.guild.id, 'system channel enabled', 'N/A', 'server', false, msg.author);
+            }
+          });
+          break;
+
         default:
           utils.sendResponse(msg, `Invalid type.\nUsage: \`${module.exports.usage}\``, 'err');
       }
