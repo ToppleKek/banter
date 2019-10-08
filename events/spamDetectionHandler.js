@@ -115,10 +115,10 @@ module.exports = {
 
       let joins = mainModule.guilds[member.guild.id].joins;
 
-      if ((Date.now() - (conf.aBotCool * 1000)) > joins.oldest)
-        joins.oldest = null;
-
-      if (!joins.oldest)
+      if (((Date.now() - (conf.aBotCool * 1000)) > joins.oldest) && joins.oldest) {
+        mainModule.guilds[member.guild.id].joins.oldest = null;
+        mainModule.guilds[member.guild.id].joins.users = [];
+      } else if (!joins.oldest)
         mainModule.guilds[member.guild.id].joins.oldest = Date.now();
 
       if (mainModule.guilds[member.guild.id].joins.hitAt) {

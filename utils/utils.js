@@ -271,8 +271,6 @@ module.exports = {
 
   async checkPermission(usr, msg, type, realAdmin = false) {
     const member = await msg.guild.members.fetch(usr).catch(err => {return});
-
-    console.log('DEBUG: checkPermission: ' + msg.command);
     
     if (!member)
       return false;

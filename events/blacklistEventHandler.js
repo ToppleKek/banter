@@ -16,13 +16,17 @@ module.exports = {
       if (arr.includes(message.channel.id)) return;
     }
     const isAdmin = await utils.checkPermission(message.author, message, 'admin');
-    if (guild.member(message.author) && isAdmin && message.content.startsWith(`${CONFIG.prefix}blacklist`)) return;
+
     let conf = await configTools.getConfig(guild)
         .catch(err => console.log(err));
     // if (!conf) conf = CONFIG.defaultConfig;
     // conf = configTools.decodeConfig(conf);
     if (!(conf instanceof Error)) {
-      if (conf.blIgnoreAdmins && isAdmin) return;
+      if (conf.blIgnoreAdmins && isAdmin)
+        return;
+
+      if (guild.member(message.author) && isAdmin && message.command === 'blacklist'/*message.content.startsWith(`${CONFIG.prefix}blacklist`)*/)
+        return;
     }
 
     mainModule.db.get(`SELECT blacklist FROM servers WHERE id = ${guild.id}`, async (err, row) => {
