@@ -59,6 +59,7 @@ function loadConfig() {
       document.getElementById('punishSel').value = json.punish;
       document.getElementById('asMInRow').value = json.asMInRow;
       document.getElementById('asCool').value = json.asCool;
+      document.getElementById('prefix').value = json.prefix;
       document.getElementById('aBotMInRow').value = json.aBotMInRow;
       document.getElementById('aBotCool').value = json.aBotCool;
       document.getElementById('aBotTCool').value = json.aBotTCool;
