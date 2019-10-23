@@ -165,7 +165,7 @@ module.exports = {
         return;
     }
 
-    if (!messageReaction.message.guild || messageReaction.emoji.name !== '⭐' || messageReaction.message.author === mainModule.client.user || usrArr[i].bot || user.id === messageReaction.message.author.id)
+    if (!messageReaction.message.guild || messageReaction.emoji.name !== '⭐' || messageReaction.message.author === mainModule.client.user || user.bot || user.id === messageReaction.message.author.id)
       return;
 
     mainModule.db.get(`SELECT * FROM starboard WHERE message_id = ${messageReaction.message.id}`, async (err, row) => {
