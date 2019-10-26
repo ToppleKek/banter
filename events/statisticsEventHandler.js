@@ -14,8 +14,8 @@ module.exports = {
 
     if (statChans) {
       if (member.guild) {
-        const totalUsers = member.guild.channels.find(channel => channel.id === json.totalUsers);
-        const newestUserEdit = member.guild.channels.find(channel => channel.id === json.newestUserEdit);
+        const totalUsers = await member.guild.channels.get(json.totalUsers).fetch();
+        const newestUserEdit = await member.guild.channels.get(json.newestUserEdit);
 
         if (!totalUsers || !newestUserEdit)
           return;
@@ -40,7 +40,7 @@ module.exports = {
 
     if (statChans) {
       if (member.guild) {
-        const totalUsers = member.guild.channels.find(channel => channel.id === json.totalUsers);
+        const totalUsers = await member.guild.channels.get(json.totalUsers).fetch();
 
         if (!totalUsers)
           return;
@@ -66,10 +66,11 @@ module.exports = {
           return;
 
         // Old name; too lazy to update everyones server with the variable name change
-        const totalOnline = guild.channels.find(channel => channel.id === json.totalOnline);
+        const totalOnline = await guild.channels.get(json.totalOnline).fetch();
 	
         if (!totalOnline)
-          return;
+          return utils.logError(`ERROR: Failed to find totalOnline channel! totalOnline: ${totalOnline} id: ${json.totalOnline} guild: ${guild.name}`, 'dailyUserGain');
+
         await totalOnline.edit({name: `Gained Users Today: ${Number.parseInt(row.today_members, 10) + 1}`});
 
         mainModule.db.run('UPDATE servers SET today_members = ? WHERE id = ?', Number.parseInt(row.today_members, 10) + 1, guild.id, err => {
@@ -96,9 +97,11 @@ module.exports = {
           return;
 
         // Old name; too lazy to update everyones server with the variable name change
-        const totalOnline = guild.channels.find(channel => channel.id === json.totalOnline);
+        const totalOnline = await guild.channels.get(json.totalOnline).fetch();
+
         if (!totalOnline)
-          return;
+          return utils.logError(`ERROR: Failed to find totalOnline channel! totalOnline: ${totalOnline} id: ${json.totalOnline} guild: ${guild.name}`, 'dailyUserLoss');
+
         await totalOnline.edit({name: `Gained Users Today: ${Number.parseInt(row.today_members, 10) - 1}`});
 
         mainModule.db.run('UPDATE servers SET today_members = ? WHERE id = ?', Number.parseInt(row.today_members, 10) - 1, guild.id, err => {
@@ -123,9 +126,11 @@ module.exports = {
       if (statChans) {
         json = JSON.parse(statChans);
 
-        const totalOnline = arr[i].channels.find(channel => channel.id === json.totalOnline);
+        const totalOnline = await arr[i].channels.get(json.totalOnline).fetch();
+        
+        console.log("DEBUG: resetDailyUsers:" + totalOnline);
         if (!totalOnline)
-          return;
+          utils.logError(`ERROR: Failed to find totalOnline channel! totalOnline: ${totalOnline} id: ${json.totalOnline} guild: ${guild.name}`, 'resetDailyUsers');
         await totalOnline.edit({name: `Gained Users Today: 0`});
 
         mainModule.db.run('UPDATE servers SET today_members = ? WHERE id = ?', 0, arr[i].id, err => {
@@ -134,6 +139,32 @@ module.exports = {
         });
       }
     }
+  },
+
+  resetDailyUsersDBG: async guild => {
+      const statChans = await utils.getStatChannels(guild.id)
+                              .catch(e => {
+                                return;
+                              });
+
+      let json;
+
+      if (statChans) {
+        json = JSON.parse(statChans);
+
+        const totalOnline = guild.channels.find(channel => channel.id === json.totalOnline);
+        
+        console.log("DEBUG: resetDailyUsers:" + totalOnline);
+        if (!totalOnline)
+          return;
+        await totalOnline.edit({name: `Gained Users Today: 0`});
+
+        mainModule.db.run('UPDATE servers SET today_members = ? WHERE id = ?', 0, guild.id, err => {
+          if (err)
+            return console.log(`[ERR] resetDailyUsers: ${err}`);
+        });
+      }
+
   },
 
   addNewChannel: async () => {
@@ -149,7 +180,7 @@ module.exports = {
 
       if (statChans) {
         json = JSON.parse(statChans);
-        const newestUser = arr[i].channels.find(channel => channel.id === json.newestUser);
+        const newestUser = await arr[i].channels.get(json.newestUser).fetch();
         if (!newestUser)
           return;
         await newestUser.edit({name: `Newest User:`});
