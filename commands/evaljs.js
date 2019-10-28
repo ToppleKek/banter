@@ -41,7 +41,13 @@ module.exports = {
           }); // end send message
           return;
         } // end catch
-        msg.channel.send(out).catch(error => msg.channel.send(`Promise rejected, probably an empty message.\n${error.name}\n${error.message}`));
+        msg.channel.send({
+          embed: {
+            color: 7506394,
+            title: `Eval Result`,
+            description: `Return: ${out ? `\`\`\`${out}\`\`\`` : 'undefined | null'}`
+          }
+        }).catch(error => msg.channel.send(`Promise rejected\n${error.name}\n${error.message}`));
       } else utils.sendResponse(msg, `Argument error. Usage: \`${module.exports.usage}\``, 'err');
     } else utils.sendResponse(msg, 'Only the owner can use this command.', 'err');
   }

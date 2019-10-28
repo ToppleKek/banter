@@ -72,11 +72,11 @@ module.exports = {
       enabled = false;
       json = JSON.parse(statChans);
 
-      const parent = msg.guild.channels.find(channel => channel.id === json.parent);
-      const totalUsers = msg.guild.channels.find(channel => channel.id === json.totalUsers);
-      const totalOnline = msg.guild.channels.find(channel => channel.id === json.newestUser);
-      const newestUser = msg.guild.channels.find(channel => channel.id === json.newestUser);
-      const newestUserEdit = msg.guild.channels.find(channel => channel.id === json.newestUserEdit);
+      const parent = await mainModule.client.channels.fetch(json.parent);
+      const totalUsers = await mainModule.client.channels.fetch(json.totalUsers);
+      const totalOnline = await mainModule.client.channels.fetch(json.totalOnline);
+      const newestUser = await mainModule.client.channels.fetch(json.newestUser);
+      const newestUserEdit = await mainModule.client.channels.fetch(json.newestUserEdit);
 
       if (totalUsers)
         totalUsers.delete();

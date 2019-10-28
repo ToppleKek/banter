@@ -14,8 +14,8 @@ module.exports = {
 
     if (statChans) {
       if (member.guild) {
-        const totalUsers = await member.guild.channels.get(json.totalUsers).fetch();
-        const newestUserEdit = await member.guild.channels.get(json.newestUserEdit);
+        const totalUsers = await mainModule.client.channels.fetch(json.totalUsers);
+        const newestUserEdit = await mainModule.client.channels.fetch(json.newestUserEdit);
 
         if (!totalUsers || !newestUserEdit)
           return;
@@ -40,7 +40,7 @@ module.exports = {
 
     if (statChans) {
       if (member.guild) {
-        const totalUsers = await member.guild.channels.get(json.totalUsers).fetch();
+        const totalUsers = await mainModule.client.channels.fetch(json.totalUsers).catch(err => utils.logError(`Failed to fetch channel! GUILD: ${member.guild.name} ID: ${json.totalUsers}`, 'guildMemberRemove'));
 
         if (!totalUsers)
           return;
@@ -66,7 +66,7 @@ module.exports = {
           return;
 
         // Old name; too lazy to update everyones server with the variable name change
-        const totalOnline = await guild.channels.get(json.totalOnline).fetch();
+        const totalOnline = await mainModule.client.channels.fetch(json.totalOnline).catch(err => utils.logError(`Failed to fetch channel! GUILD: ${guild.name} ID: ${json.totalOnline}`, 'dailyUserGain'));
 	
         if (!totalOnline)
           return utils.logError(`ERROR: Failed to find totalOnline channel! totalOnline: ${totalOnline} id: ${json.totalOnline} guild: ${guild.name}`, 'dailyUserGain');
@@ -97,7 +97,7 @@ module.exports = {
           return;
 
         // Old name; too lazy to update everyones server with the variable name change
-        const totalOnline = await guild.channels.get(json.totalOnline).fetch();
+        const totalOnline = await mainModule.client.channels.fetch(json.totalOnline).catch(err => utils.logError(`Failed to fetch channel! GUILD: ${guild.name} ID: ${json.totalOnline}`, 'dailyUserLoss'));
 
         if (!totalOnline)
           return utils.logError(`ERROR: Failed to find totalOnline channel! totalOnline: ${totalOnline} id: ${json.totalOnline} guild: ${guild.name}`, 'dailyUserLoss');
@@ -126,7 +126,7 @@ module.exports = {
       if (statChans) {
         json = JSON.parse(statChans);
 
-        const totalOnline = await arr[i].channels.get(json.totalOnline).fetch();
+        const totalOnline = await mainModule.client.channels.fetch(json.totalOnline).catch(err => utils.logError(`Failed to fetch channel! GUILD: ${arr[i].name} ID: ${json.totalOnline}`, 'guildMemberRemove'));
         
         console.log("DEBUG: resetDailyUsers:" + totalOnline);
         if (!totalOnline)
@@ -180,7 +180,7 @@ module.exports = {
 
       if (statChans) {
         json = JSON.parse(statChans);
-        const newestUser = await arr[i].channels.get(json.newestUser).fetch();
+        const newestUser = await arr[i].channels.fetch(json.newestUser);
         if (!newestUser)
           return;
         await newestUser.edit({name: `Newest User:`});
