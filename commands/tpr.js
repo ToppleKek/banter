@@ -10,7 +10,7 @@ module.exports = {
       if (hasArgs) {
         if (!msg.guild.roles.find(role => role.name === msg.content)) return utils.sendResponse(msg, `Role not found. Usage: ${module.exports.usage}`, 'err');
         else {
-          let selfRoles = await utils.getSelfRoles(msg.guild.id).catch(e => utils.sendResponse(msg, `[SQL_ERROR] In await: \`${e}\` <--- if this is null, ignore`, 'err')); 
+          let selfRoles = await utils.getSelfRoles(msg.guild.id).catch(e => utils.error(`tpr.js In await: \`${e}\` <--- if this is null, ignore`)); 
           let existingRoles = [];
           let rem = false;
           const roleToAdd = msg.guild.roles.find(role => role.name.toLowerCase() === msg.content.toLowerCase());

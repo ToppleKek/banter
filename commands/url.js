@@ -12,7 +12,7 @@ module.exports = {
       const url = await utils.getVanityURL(msg.guild);
       const c = await utils.getVanityURLCode(msg.guild);
 
-      return utils.sendResponse(msg, `This server's vanity URL is: ${url === null ? 'not set' : `${CONFIG.rootDomain}/${url} and points to: https://discord.gg/${c}`}`, 'info');
+      return utils.sendResponse(msg, `This server's vanity URL is: ${url === null ? 'not set' : `${CONFIG.rootDomain}/${url} and points to: ${c === 'auto' ? '(auto generated invite)' : `https://discord.gg/${c}`}`}`, 'info');
     }
 
     msg.content = msg.content.replace(/\s+/g, ' ');
@@ -28,12 +28,13 @@ module.exports = {
       return utils.sendResponse(msg, 'Your server\'s vanity URL has been disabled', 'success');
     }
 
-    if (!args[1])
-      return utils.commandError(msg, 'Argument Error', 'You must provide a valid invite code (or "disable" as first arg)', module.exports.usage);
+    if (!args[1]) {
+      return utils.commandError(msg, 'Argument Error', 'You must provide a valid invite code (or "disable" as first arg, or "auto" as second arg)', module.exports.usage);
+    }
 
     const invites = await msg.guild.fetchInvites();
 
-    if (!invites.find(inv => inv.code === args[1]))
+    if (!invites.find(inv => inv.code === args[1]) && args[1] != 'auto')
       return utils.commandError(msg, 'Argument Error', `Invalid invite: ${args[1]}`, module.exports.usage);
 
     const url = await utils.changeVanityURL(msg.guild, args[0], args[1]);

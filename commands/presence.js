@@ -4,20 +4,43 @@ module.exports = {
   help: 'Get a users (rich)presence',
   usage: `${CONFIG.prefix}presence @someone`,
   main: async (client, msg, hasArgs) => {
+    const emoji = {
+      online: 'allow',
+      idle: 'idle',
+      dnd: 'deny',
+      offline: 'unmanageable'
+    };
+
     let target;
-    if (msg.mentions.users.first()) target = msg.mentions.users.first();
-    //else if (usrFoundFromID.id) target = usrFoundFromID;
-    else if (client.users.find(usr => usr.username.toLowerCase().search(msg.content.toLowerCase()) > -1)) target = client.users.find(usr => usr.username.toLowerCase().search(msg.content.toLowerCase()) > -1);
+
+    if (msg.mentions.users.first())
+      target = msg.mentions.users.first();
+
+    else if (client.users.find(usr => usr.username.toLowerCase().search(msg.content.toLowerCase()) > -1))
+      target = client.users.find(usr => usr.username.toLowerCase().search(msg.content.toLowerCase()) > -1);
+
     else if (hasArgs && new RegExp((/[0-9]{18}/g)).test(msg.content)) {
       const usrFoundFromID = await client.users.fetch(msg.content)
           .catch(err => {
             target = msg.author;
           });
-      if (usrFoundFromID) target = usrFoundFromID;
+      if (usrFoundFromID)
+        target = usrFoundFromID;
+    } else
+      target = msg.author;
+
+    // When you are lazy
+    if (!target.presence.clientStatus) {
+      target.presence.clientStatus = {
+        desktop: 'unknown',
+        mobile: 'unknown',
+        web: 'unknown'
+      };
     }
-    else target = msg.author;
-    if (!target.presence || !target.presence.activity) return utils.sendResponse(msg, 'That user is not playing a game', 'err');
+
     if (target.presence.activity && target.presence.activity.state && target.presence.activity.details && target.presence.activity.assets) {
+      const cs = target.presence.clientStatus;
+
       msg.channel.send({
         embed: {
           author: {
@@ -25,8 +48,8 @@ module.exports = {
             iconURL: target.avatarURL(),
           },
           fields: [{
-            name: 'Status',
-            value: target.presence.status,
+            name: 'Statuses',
+            value: `Desktop: ${cs.desktop ? `${CONFIG.emoji[emoji[cs.desktop]]} ${cs.desktop}` : `${CONFIG.emoji[emoji['offline']]} offline`}\nMobile: ${cs.mobile ? `${CONFIG.emoji[emoji[cs.mobile]]} ${cs.mobile}` : `${CONFIG.emoji[emoji['offline']]} offline`}\nWeb: ${cs.web ? `${CONFIG.emoji[emoji[cs.web]]} ${cs.web}` : `${CONFIG.emoji[emoji['offline']]} offline`}`,
           }, {
             name: 'Presence name',
             value: target.presence.activity.name ? target.presence.activity.name : 'N/A',
@@ -59,6 +82,8 @@ module.exports = {
         },
       });
     } else {
+      const cs = target.presence.clientStatus;
+
       msg.channel.send({
         embed: {
           author: {
@@ -66,17 +91,20 @@ module.exports = {
             iconURL: target.avatarURL(),
           },
           fields: [{
-            name: 'Status',
-            value: target.presence.status,
+            name: 'Statuses',
+            value: `Desktop: ${cs.desktop ? `${CONFIG.emoji[emoji[cs.desktop]]} ${cs.desktop}` : `${CONFIG.emoji[emoji['offline']]} offline`}\nMobile: ${cs.mobile ? `${CONFIG.emoji[emoji[cs.mobile]]} ${cs.mobile}` : `${CONFIG.emoji[emoji['offline']]} offline`}\nWeb: ${cs.web ? `${CONFIG.emoji[emoji[cs.web]]} ${cs.web}` : `${CONFIG.emoji[emoji['offline']]} offline`}`,
           }, {
             name: 'Presence name',
-            value: target.presence.activity.name ? target.presence.activity.name : 'N/A',
+            value: (target.presence.activity && target.presence.activity.name) ? target.presence.activity.name : 'N/A',
+          }, {
+            name: 'Presence state',
+            value: target.presence.activity && target.presence.activity.state ? target.presence.activity.state : 'N/A'
           }, {
             name: 'Time playing',
-            value: target.presence.activity.timestamps ? utils.secondsToHms((Date.now() / 1000) - (target.presence.activity.timestamps.start.getTime() / 1000)) : 'N/A',
+            value: (target.presence.activity && target.presence.activity.timestamps) ? utils.secondsToHms((Date.now() / 1000) - (target.presence.activity.timestamps.start.getTime() / 1000)) : 'N/A',
           }, {
             name: 'Type',
-            value: target.presence.activity.type,
+            value: (target.presence.activity && target.presence.activity.type) ? target.presence.activity.type : 'N/A',
           }],
           color: 4718492,
           timestamp: new Date(),

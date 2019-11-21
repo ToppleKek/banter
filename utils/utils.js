@@ -30,13 +30,29 @@ module.exports = {
     });
   },
 
+  info(msg) {
+    console.log('\033[94mInfo:\033[0m ' + msg);
+  },
+
+  error(msg) {
+    console.log('\033[91mError:\033[0m ' + msg);
+  },
+
+  warn(msg) {
+    console.log('\033[33mWarn:\033[0m ' + msg);
+  },
+
+  debug(msg) {
+    console.log('\033[32mDebug:\033[0m ' + msg);
+  },
+
   logError(reason, p) {
     mainModule.client.channels.get(CONFIG.errorChan).send({embed: {
       color: 11736341,
       description: 'Unhandled Promise Rejection',
       fields: [{
         name: 'AT:',
-        value: `\`${p} :: See console for more details\``
+        value: `\`${p}\``
       }, {
         name: 'REASON:',
         value: `\`\`\`${reason}\`\`\``,
@@ -232,18 +248,16 @@ module.exports = {
     return new Promise(async (resolve, reject) => {
       const urls = await module.exports.getAllVanityURLS();
 
-      console.dir(urls);
-
       if (urls.includes(vanity))
         resolve(null);
 
-      const currentURL = await module.exports.getVanityURL(guild);
+      // const currentURL = await module.exports.getVanityURL(guild);
 
-      if (currentURL !== null)
-        await fs.remove(`${CONFIG.httpDir}/${currentURL}`);
+      // if (currentURL !== null)
+      //   await fs.remove(`${CONFIG.httpDir}/${currentURL}`);
 
-      await fs.mkdir(`${CONFIG.httpDir}/${vanity}`).catch(err => resolve(null));
-      await fs.appendFile(`${CONFIG.httpDir}/${vanity}/.htaccess`, `Redirect 301 /${vanity} https://discord.gg/${invite}\n`).catch(err => resolve(null));
+      // await fs.mkdir(`${CONFIG.httpDir}/${vanity}`).catch(err => resolve(null));
+      // await fs.appendFile(`${CONFIG.httpDir}/${vanity}/.htaccess`, `Redirect 301 /${vanity} https://discord.gg/${invite}\n`).catch(err => resolve(null));
 
       mainModule.db.run(`UPDATE servers SET vanity_url = ?, vanity_invite = ? WHERE id = ?`, vanity, invite, guild.id, err => {
         if (err)
@@ -464,7 +478,6 @@ module.exports = {
 
     for (let i = 0; i < clientGuilds.length; i += 1) {
       member = await clientGuilds[i].members.fetch(user).catch (err => {return});
-      console.log(member);
 
       if (member)
         mutualGuilds.push(clientGuilds[i]);

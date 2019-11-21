@@ -18,7 +18,7 @@ module.exports = {
         let out;
         try {
           out = eval(code);
-          console.log(`[EVAL] ${out}`);
+          utils.info(`Eval: ${out}`);
         } catch (error) {
           msg.channel.send({
             embed: {

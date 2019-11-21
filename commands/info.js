@@ -19,8 +19,6 @@ module.exports = {
 
       if (usrFoundFromID)
         target = usrFoundFromID;
-
-      console.dir(target.avatarURL());
     }
 
     else {

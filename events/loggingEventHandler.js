@@ -30,7 +30,7 @@ module.exports = {
         });
       }
     }).catch(err => {
-      console.log('[WARN] Logging disabled during channelCreate');
+      utils.warn('Logging disabled during channelCreate');
     });
   },
 
@@ -61,7 +61,7 @@ module.exports = {
         });
       }
     }).catch(err => {
-      console.log('[WARN] Logging disabled during channelDelete');
+      utils.warn('Logging disabled during channelDelete');
     });
   },
 
@@ -90,7 +90,7 @@ module.exports = {
         });
       }
     }).catch(err => {
-      console.log('[WARN] Logging disabled during guildMemberAdd');
+      utils.warn('Logging disabled during guildMemberAdd');
     });
   },
 
@@ -117,7 +117,7 @@ module.exports = {
         });
       }
     }).catch(err => {
-      console.log('[WARN] Logging disabled during guildMemberRemove');
+      utils.warn('Logging disabled during guildMemberRemove');
     });
   },
 
@@ -146,7 +146,7 @@ module.exports = {
       change = `Old: ${oldRolesChange.join(', ')}\nNew: ${newRolesChange.join(', ')}`;
     }
 
-    if (!change) return console.log('[WARN] Change was empty in guildMemberUpdate!');
+    if (!change) return utils.warn('Change was empty in guildMemberUpdate!');
     const embed = {
       color: 1571692,
       title: title,
@@ -162,10 +162,10 @@ module.exports = {
     };
     utils.getActionChannel(newMember.guild.id, 'log').then(log => {
       if (log) {
-        newMember.guild.channels.get(log).send({embed}).catch(err => console.log(`[ERROR] Sending message failed in logging ${err}`));
+        newMember.guild.channels.get(log).send({embed}).catch(err => utils.error(`Sending message failed in logging ${err}`));
       }
     }).catch(err => {
-      console.log('[WARN] Logging disabled during guildMemberUpdate');
+      utils.warn('Logging disabled during guildMemberUpdate');
     });
   },
 
@@ -180,7 +180,7 @@ module.exports = {
     utils.getActionChannel(message.guild.id, 'log').then(async log => {
       if (log === message.channel.id) {
         let conf = await configTools.getConfig(message.guild)
-            .catch(err => console.log(err));
+            .catch(err => utils.error(err));
         // if (!conf) conf = CONFIG.defaultConfig;
         // conf = configTools.decodeConfig(conf);
         if (!(conf instanceof Error) && conf.logNoD) {
@@ -200,7 +200,7 @@ module.exports = {
               message.guild.channels.get(log).send({embed});
               message.guild.channels.get(log).send(embedResend);
             }
-          }).catch(err => console.log(`[DEBUG] audit error ${err}`));
+          }).catch(err => utils.debug(`audit error ${err}`));
         }
       }
       if (log) {
@@ -241,7 +241,7 @@ module.exports = {
         });
       }
     }).catch(err => {
-      console.log('[WARN] Logging disabled during messageDelete OR message content was blank');
+      utils.warn('Logging disabled during messageDelete OR message content was blank');
     });
   },
 
@@ -254,7 +254,7 @@ module.exports = {
         if (arr.includes(messages.first().channel.id)) return;
       }
       let conf = await configTools.getConfig(messages.first().guild)
-          .catch(err => console.log(err));
+          .catch(err => utils.error(err));
       // if (!conf) conf = CONFIG.defaultConfig;
       // conf = configTools.decodeConfig(conf);
       if (!(conf instanceof Error)) {
@@ -291,8 +291,8 @@ module.exports = {
         }
 
         exec(`echo "${content.join('\n').replace('"', '').replace('(', '').replace(')', '').replace(/\`/g, '')}" | haste`, (err, stdout, stderr) => {
-          if (err) return console.log(err);
-          else if (stderr) return console.log(stderr);
+          if (err) return utils.error(err);
+          else if (stderr) return utils.error(stderr);
           else {
             utils.getActionChannel(messages.first().guild.id, 'log').then(log => {
               messages.first().guild.channels.get(log).send({
@@ -303,7 +303,7 @@ module.exports = {
                   timestamp: new Date(),
                 },
               });
-            }).catch(err => console.log('[WARN] Logging disabled during messageDeleteBulk'));
+            }).catch(err => utils.warn('Logging disabled during messageDeleteBulk'));
           }
         });
       }
@@ -338,8 +338,8 @@ module.exports = {
         });
       }
     }).catch(err => {
-      console.log('[WARN] Logging disabled during messageUpdate OR message content was blank');
-      console.log(err);
+      utils.warn('Logging disabled during messageUpdate OR message content was blank');
+      utils.error(err);
     });
   },
 
@@ -398,7 +398,7 @@ module.exports = {
     for (let i = 0; i < mutualGuilds.length; i += 1) {
       utils.getActionChannel(mutualGuilds[i].id, 'log').then(log => {
         mutualGuilds[i].channels.get(log).send(embed);
-      }).catch(err => console.log(`[DEBUG] Skipping non mutual guild to user GUILD: ${mutualGuilds[i].name} USER: ${newUser.tag} ERR: ${err}`));
+      }).catch(err => utils.debug(`Skipping non mutual guild to user GUILD: ${mutualGuilds[i].name} USER: ${newUser.tag} ERR: ${err}`));
     }
   },
 
@@ -429,7 +429,6 @@ module.exports = {
         if (arr.includes(newChannel.channel.id)) return;
       }
       const fields = [];
-      console.log(`OLD: ${oldChannel.rawPosition} ${oldChannel.name} NEW: ${newChannel.rawPosition} ${newChannel.name}`);
       if (oldChannel.name !== newChannel.name) {
         fields.push({
           name: 'Name changed',
@@ -453,9 +452,9 @@ module.exports = {
               fields: fields,
               timestamp: new Date(),
             },
-          }).catch(err => console.log(`[DEBUG] Cant send message ${err}`));
-        }).catch(err => console.log(`[DEBUG] Logging not enabled during channelUpdate ${err}`));
-      } else console.log('fields less than 0');
+          }).catch(err => utils.debug(`Cant send message ${err}`));
+        }).catch(err => utils.debug(`Logging not enabled during channelUpdate ${err}`));
+      } else utils.debug('fields less than 0');
     }
   },
 
@@ -479,7 +478,7 @@ module.exports = {
         });
       }
     }).catch(err => {
-      console.log('[WARN] Logging disabled during roleCreate');
+      utils.warn('Logging disabled during roleCreate');
     });
   },
 
@@ -503,7 +502,7 @@ module.exports = {
         });
       }
     }).catch(err => {
-      console.log('[WARN] Logging disabled during roleDreate');
+      utils.warn('Logging disabled during roleDreate');
     });
   },
 
@@ -524,7 +523,7 @@ module.exports = {
           timestamp: new Date(),
         },
       });
-    }).catch(err => console.log('[WARN] Logging disabled during guildBanAdd'));
+    }).catch(err => utils.warn('Logging disabled during guildBanAdd'));
   },
 
   guildBanRemove: async (guild, user) => {
@@ -544,6 +543,6 @@ module.exports = {
           timestamp: new Date(),
         },
       });
-    }).catch(err => console.log('[WARN] Logging disabled during guildBanAdd'));;
+    }).catch(err => utils.warn('Logging disabled during guildBanAdd'));;
   },
 };

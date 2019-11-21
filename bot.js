@@ -1,5 +1,12 @@
 const CONFIG = require('./config.json');
+
 const Discord = require('discord.js');
+const fs = require('fs');
+const sqlite3 = require('sqlite3').verbose();
+const schedule = require('node-schedule');
+const WebSocket = require('ws');
+const https = require('https');
+
 const commandHandler = require('./utils/commandHandler.js');
 const utils = require('./utils/utils.js');
 const configTools = require('./utils/configTools.js');
@@ -10,19 +17,21 @@ const blacklistEventHandler = require('./events/blacklistEventHandler.js');
 const starboardEventHandler = require('./events/starboardEventHandler.js');
 const spamDetectionHandler = require('./events/spamDetectionHandler.js');
 const statisticsEventHandler = require('./events/statisticsEventHandler.js');
-const fs = require('fs');
-const sqlite3 = require('sqlite3').verbose();
-const schedule = require('node-schedule');
+const webSocketEventHandler = require('./events/webSocketEventHandler.js');
+
 const events = {
   MESSAGE_REACTION_ADD: 'messageReactionAdd',
   MESSAGE_REACTION_REMOVE: 'messageReactionRemove',
 };
 
+let wss;
+let server;
+
 module.exports.db = new sqlite3.Database('./data.db', (err) => {
   if (err) {
-    console.log(`[ERROR] Failed to connect to sqlite3 database! ${err}`);
+    utils.error(`Failed to connect to sqlite3 database! ${err}`);
   } else {
-    console.log('Connected to sqlite3 database (data.db)');
+    utils.info('Connected to sqlite3 database (data.db)');
   }
 });
 
@@ -30,6 +39,7 @@ module.exports.client = new Discord.Client({ autoReconnect: true, disableEveryon
 module.exports.commands = {};
 module.exports.guilds = {};
 module.exports.locks = {};
+module.exports.ips = {};
 
 // -- FUNCTIONS --
 function loadCommands() {
@@ -37,10 +47,10 @@ function loadCommands() {
   for (let file of files) {
     if (file.endsWith('.js')) {
       module.exports.commands[file.slice(0, -3)] = require(`./commands/${file}`);
-      console.log(`Loaded ${file}`);
+      utils.info(`Loaded ${file}`);
     }
   }
-  console.log('———— All Commands Loaded! ————');
+  utils.info('All commands loaded.');
 }
 // -- END FUNCTIONS --
 // -- COMMANDS --
@@ -52,7 +62,7 @@ module.exports.commands.help.main = async (client, msg, hasArgs) => {
   const pages = [];
   const cmds = [];
   const conf = await configTools.getConfig(msg.guild)
-        .catch(err => console.log(`[ERROR] bot:help:Failed to get config ${err}`));
+        .catch(err => utils.error(`commands.help: Failed to get config ${err}`));
 
   for (const command in module.exports.commands)
     cmds.push(`**${conf.prefix.length > 0 ? conf.prefix : CONFIG.prefix}${command}** - ${module.exports.commands[command].help}`);
@@ -161,7 +171,28 @@ module.exports.commands.reload.main = async (client, msg, hasArgs) => {
 // -- EVENTS --
 module.exports.client.on('ready', () => {
   loadCommands();
-  console.log(`Ready. \nClient: ${module.exports.client.user.tag}\nOwner: ${module.exports.client.users.get(CONFIG.ownerid).tag}\nServers: ${module.exports.client.guilds.array().length}`);
+
+  utils.info('WebSocket: Starting web server...');
+  const server = https.createServer({
+    cert: fs.readFileSync(CONFIG.sslCert),
+    key: fs.readFileSync(CONFIG.sslKey)
+  });
+
+  const wss = new WebSocket.Server({ server });
+
+  server.listen(3001);
+  utils.info('WebSocket: Setting up callbacks...');
+
+  wss.on('connection', (ws, req) => {
+      utils.info('WebSocket: Connection! IP: ' + req.headers['x-forwarded-for']);
+      ws.on('message', (message) => {
+        webSocketEventHandler.message(message, req, ws);
+      });
+  });
+
+  utils.info('[STARTUP] WebSocket: Done.');
+
+  utils.info(`Ready. \nClient: ${module.exports.client.user.tag}\nOwner: ${module.exports.client.users.get(CONFIG.ownerid).tag}\nServers: ${module.exports.client.guilds.array().length}`);
 });
 
 module.exports.client.on('message', async msg => {
@@ -172,7 +203,7 @@ module.exports.client.on('message', async msg => {
   
   if (msg.guild)
     conf = await configTools.getConfig(msg.guild)
-          .catch(err => console.log(`[ERROR] bot:message:Failed to get config ${err}`));
+          .catch(err => utils.error(`client_event (message): Failed to get config ${err}`));
 
   if (msg.content.startsWith(`<@${module.exports.client.user.id}>`) || msg.content.startsWith(`<@!${module.exports.client.user.id}>`))
     commandHandler.checkCommand(module.exports.client, module.exports.commands, msg, true);
@@ -185,7 +216,6 @@ module.exports.client.on('message', async msg => {
 module.exports.client.on('messageUpdate', (oldMessage, newMessage) => blacklistEventHandler.message(oldMessage, newMessage));
 
 module.exports.client.on('guildMemberAdd', member => {
-  console.log('[INFO] guildMemberAddEvent');
   statisticsEventHandler.guildMemberAdd(member);
   statisticsEventHandler.dailyUserGain(member.guild);
   guildMemberAddEventHandler.event(module.exports.client, module.exports.db, member);
@@ -220,13 +250,13 @@ module.exports.client.on('raw', async event => {
 });
 
 module.exports.client.on('messageReactionAdd', async (messageReaction, user) => {
-    const starboard = await utils.getActionChannel(messageReaction.message.guild.id, 'starboard').catch(err => console.log(`[WARN] Starboard promise reject! Err: ${err}`));
+    const starboard = await utils.getActionChannel(messageReaction.message.guild.id, 'starboard').catch(err => utils.warn(`[WARN] Starboard promise reject! Err: ${err}`));
     if (!starboard) return;
   starboardEventHandler.messageReactionAdd(messageReaction, user);
 });
 
 module.exports.client.on('messageReactionRemove', async (messageReaction, user) => {
-    const starboard = await utils.getActionChannel(messageReaction.message.guild.id, 'starboard').catch(err => console.log(`[WARN] Starboard promise reject! Err: ${err}`));
+    const starboard = await utils.getActionChannel(messageReaction.message.guild.id, 'starboard').catch(err => utils.warn(`[WARN] Starboard promise reject! Err: ${err}`));
     if (!starboard) return;
   starboardEventHandler.messageReactionRemove(messageReaction, user);
 });
@@ -253,20 +283,19 @@ module.exports.client.on('messageDeleteBulk', messages                 => loggin
 //module.exports.client.on('presenceUpdate', (oldMember, newMember) => loggingEventHandler.presenceUpdate(oldMember, newMember));
 
 schedule.scheduleJob('0 0 * * *', statisticsEventHandler.resetDailyUsers);
+schedule.scheduleJob('*/30 * * * *', webSocketEventHandler.resetIPS);
 
 module.exports.client.on('error', (err) => {
-  console.log('————— ERROR —————');
-  console.log(err);
-  console.log('——— END ERROR ———');
+  utils.error(`client_event (error): ${err}`);
 });
 
 module.exports.client.on('disconnected', () => {
-  console.log('[WARN] The client has disconnected');
+  utils.warn('client_event (disconnected): The client has disconnected');
 });
 
 process.on('unhandledRejection', (reason, p) => {
   console.dir(p);
-  utils.logError(reason, p);
+  utils.logError(reason, `F:${reason.fileName} - L:${reason.lineNumber}`);
 });
 // -- END EVENTS --
 module.exports.client.login(CONFIG.token);

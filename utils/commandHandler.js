@@ -21,10 +21,12 @@ module.exports = {
       if (msg.content === `<@${client.user.id}> ${command}` || msg.content === `<@!${client.user.id}> ${command}`)
         hasArgs = false;
 
+      msg.content = msg.content.replace(/\s\s+/g, ' ');
+      
       let content = msg.content.split(' ');
 
       content.splice(0, 2);
-      msg.content = content.join(' ').replace(/\s\s+/g, ' ');
+      msg.content = content.join(' ');
 
       if (commands[command]) {
         try {
@@ -44,9 +46,9 @@ module.exports = {
           });
 
           commands[command].main(client, msg, hasArgs);
-          console.log(`[INFO] Command ${command} used by: ${msg.author.tag} args: ${msg.content}`);
+          utils.info(`Command ${command} used by: ${msg.author.tag} args: ${msg.content}`);
         } catch (err) {
-          console.log(`[ERROR] (Mention) Error in command used by: ${msg.author.tag} Content: ${msg.content} Error: ${err} ${err.stack}`);
+          utils.error(`(Mention) Error in command used by: ${msg.author.tag} Content: ${msg.content} Error: ${err} ${err.stack}`);
         }
       }
     } else {
@@ -56,7 +58,7 @@ module.exports = {
       if (msg.content === prefix + command)
         hasArgs = false;
 
-      msg.content = msg.content.replace(`${prefix + command} `, '').replace(/\s\s+/g, ' ');
+      msg.content = msg.content.replace(/\s\s+/g, ' ').replace(`${prefix + command} `, '');
 
       if (commands[command]) {
         try {
@@ -76,9 +78,9 @@ module.exports = {
           });
 
           commands[command].main(client, msg, hasArgs);
-          console.log(`[INFO] Command ${command} used by: ${msg.author.tag} args: ${msg.content}`);
+          utils.info(`Command ${command} used by: ${msg.author.tag} args: ${msg.content}`);
         } catch (err) {
-          console.log(`[ERROR] Error in command used by: ${msg.author.tag} Content: ${msg.content} Error: ${err} ${err.stack}`);
+          utils.error(`Error in command used by: ${msg.author.tag} Content: ${msg.content} Error: ${err} ${err.stack}`);
         }
       }
     }

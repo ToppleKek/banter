@@ -14,7 +14,7 @@ module.exports = {
     }
 
     let conf = await configTools.getConfig(message.guild)
-        .catch(err => console.log(err));
+        .catch(err => utils.error(err));
 
     if (!(conf instanceof Error)) {
       
@@ -64,15 +64,11 @@ module.exports = {
         const regex = /<@!?(\d{17,19})>|<@&(\d{17,19})>/g;
         const matches = message.content.match(regex);
 
-        console.log(matches);
-
         if (matches)
           user.possibleSpamMentions += matches.length;
 
         if (Date.now() - (conf.asPCool * 1000) > user.lastMessageTime)
           user.possibleSpamMentions = 0;
-
-        console.log(`POSSIBLE SPAM: ${user.possibleSpamMentions} LASTMSG: ${user.lastMessageTime}`);
 
         if (user.possibleSpamMentions >= conf.asPing) {
           utils.sendResponse(message, `**ANTISPAM:** (Ping spam) Possible spam detected for user: **${message.author.tag}**\n*Please contact a moderator to be unmuted*`, 'info');
@@ -89,13 +85,13 @@ module.exports = {
       user.lastMessageTime = message.createdTimestamp;
 
     } else {
-      console.log(`[ERROR] spamDetection: conf is instanceof Error: ${conf} Guild: ${message.guild.name}`);
+      utils.error(`spamDetection: conf is instanceof Error: ${conf} Guild: ${message.guild.name}`);
     }
   },
 
   guildMemberAdd: async member => {
     let conf = await configTools.getConfig(member.guild)
-        .catch(err => console.log(err));
+        .catch(err => utils.error(err));
 
     if (!(conf instanceof Error)) {
       if (conf.aBotMInRow <= 0)
@@ -134,7 +130,7 @@ module.exports = {
       if (joins.hitThreshold)
         utils.permaMute(member.user.id, member.guild.id, true, mainModule.client.user.id, 'suspected spam', false);
       else if (joins.users.length > conf.aBotMInRow && (Date.now() - (conf.aBotCool * 1000)) < joins.oldest) {
-        console.log("DEBUG: Not on cooldown: muting all");
+        utils.debug("DEBUG: Not on cooldown: muting all");
 
         for (let i = 0; i < joins.users.length; i++)
           utils.permaMute(joins.users[i], member.guild.id, true, mainModule.client.user.id, 'suspected spam', false);
@@ -150,7 +146,7 @@ ${joins.users.length} users were muted and new users will be muted for another $
 These users must be unmuted manually if this was an error. Please take appropriate action as soon as possible.`, {disableEveryone: false});
       }
     } else {
-      console.log(`[ERROR] spamDetection: conf is instanceof Error: ${conf} Guild: ${message.guild.name}`);
+      utils.error(`spamDetection: conf is instanceof Error: ${conf} Guild: ${message.guild.name}`);
     }
   }
 };
