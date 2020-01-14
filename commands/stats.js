@@ -79,16 +79,16 @@ module.exports = {
       const newestUserEdit = await mainModule.client.channels.fetch(json.newestUserEdit);
 
       if (totalUsers)
-        totalUsers.delete();
+        totalUsers.delete().catch(err => utils.logError(`Failed to delete channel! GUILD: ${msg.guild.name} ID: ${json.totalUsers} ERR: ${err}`, 'totalUsers (stats.js)'));
 
       if (newestUser)
-        newestUser.delete();
+        newestUser.delete().catch(err => utils.logError(`Failed to delete channel! GUILD: ${msg.guild.name} ID: ${json.newestUser} ERR: ${err}`, 'newestUser (stats.js)'));
 
       if (totalOnline)
-        totalOnline.delete();
+        totalOnline.delete().catch(err => utils.logError(`Failed to delete channel! GUILD: ${msg.guild.name} ID: ${json.totalOnline} ERR: ${err}`, 'totalOnline (stats.js)'));
 
       if (newestUserEdit)
-        newestUserEdit.delete();
+        newestUserEdit.delete().catch(err => utils.logError(`Failed to delete channel! GUILD: ${msg.guild.name} ID: ${json.newestUserEdit} ERR: ${err}`, 'newestUserEdit (stats.js)'));
 
       if (parent)
         parent.delete();

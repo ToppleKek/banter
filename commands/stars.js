@@ -1,4 +1,5 @@
 const utils = require('../utils/utils.js');
+const mainModule = require('../bot.js');
 const CONFIG = require('../config.json');
 const Chartjs = require('chartjs-node');
 const fs = require('fs');
@@ -11,103 +12,121 @@ module.exports = {
 
     if (!await utils.checkPermission(msg.author, msg, 'owner'))
       return utils.commandError(msg, 'Other Error', 'This command is in development and disabled', module.exports.usage);
-    const Plotter = new Chartjs(1000, 1000);
-    console.log("got plotter");
 
-    // const chartOptions = {};
+    let stars = await module.exports.getSortedStars(msg);
+    let rows = await module.exports.getSortedStars(msg, 'rows');
 
-    // chartOptions.type = 'bar';
-    // chartOptions.options = {};
-    // chartOptions.options.scales = {};
-    // chartOptions.options.scales.yAxes = [{ticks: {beginAtZero: true}}];
-    var chartConfig = {
+    if (!stars)
+      return utils.sendResponse(msg, 'This server has no starred messages', 'err');
+
+    const labels = [];
+    const backgroundColor = [];
+    const borderColor = [];
+    const humanStars = [];
+
+    if (stars.length > 5)
+      stars = stars.slice(0, 5);
+
+    for (let i = 0; i < stars.length; i++) {
+      backgroundColor.push('rgba(255, 99, 132, 0.4)');
+      borderColor.push('rgba(255, 99, 132, 1)');
+      labels.push(i + 1);
+
+      const chan = await mainModule.client.channels.fetch(rows[i].channel_id);
+      const m = await chan.messages.fetch(rows[i].message_id);
+      const content = m.content.slice(0, 40);
+      humanStars.push(`${i + 1} - ${m.author.tag} [**Click to jump**](https://canary.discordapp.com/channels/${m.guild.id}/${chan.id}/${m.id}) - **${m.content.length === 0 ? 'EMPTY MESSAGE' : content}${m.content.length > 40 ? '...' : ''}**`);
+    }
+
+    const chartConfig = {
       type: 'bar',
       data: {
-        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+        labels,
         datasets: [{
-          label: '# of Votes',
-          data: [12, 19, 3, 5, 2, 3],
-          backgroundColor: [
-          'rgba(255, 99, 132, 0.2)',
-          'rgba(54, 162, 235, 0.2)',
-          'rgba(255, 206, 86, 0.2)',
-          'rgba(75, 192, 192, 0.2)',
-          'rgba(153, 102, 255, 0.2)',
-          'rgba(255, 159, 64, 0.2)'
-          ],
-          borderColor: [
-          'rgba(255,99,132,1)',
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(75, 192, 192, 1)',
-          'rgba(153, 102, 255, 1)',
-          'rgba(255, 159, 64, 1)'
-          ],
+          data: stars,
+          backgroundColor,
+          borderColor,
           borderWidth: 1
         }]
       },
       options: {
-        responsive: false,
-        width: 400,
-        height: 400,
+        width: 600,
+        height: 600,
         animation: false,
+        title: {
+          display: true,
+          fontSize: 18,
+          text: `Top stars for ${msg.guild.name}`
+        },
+        plugins: {
+          beforeDraw: chartInstance => {
+            const ctx = chartInstance.chart.ctx;
+
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, chartInstance.chart.width, chartInstance.chart.height);
+          }
+        },
+        legend: {
+          display: false
+        },
         scales: {
           yAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: 'Number of stars'
+            },
             ticks: {
-              beginAtZero: true
+              beginAtZero: true,
+              callback: value => {return (value % 1 === 0) ? value : null}
             }
           }]
-        },
-        tooltips: {
-          mode: 'label'
         }
       }
     };
 
-    var chartNode = new Chartjs(600, 600);
-    chartNode.drawChart(chartConfig)
-        .then(() => {
-            return chartNode.writeImageToFile('image/png', `../cache/${msg.id}.png`);
-        })
-        .then(async () => {
-            // clean up
-            await msg.channel.send({
-              embed: {
-                image: {
-                  url: `attachment://${msg.id}.png`
-                }
-              },
-              files: [{
-                attachment: `../cache/${msg.id}.png`,
-                name: `${msg.id}.png`
-              }]
-            });
-            fs.unlinkSync(`../cache/${msg.id}.png`);
-        });
+    const chartNode = new Chartjs(600, 600);
 
-    // console.log("drawing");
-    // const chart = Plotter.drawChart(chartConfig).then(() => {
-    // // chart is created
+    const chart = await chartNode.drawChart(chartConfig);
+    const image = await chartNode.writeImageToFile('image/png', `./cache/${msg.id}.png`);
+    
+    await msg.channel.send({
+      embed: {
+        title: `Top stars for ${msg.guild.name}`,
+        description: humanStars.join('\n'),
+        image: {
+          url: `attachment://${msg.id}.png`
+        }
+      },
+      files: [{
+        attachment: `./cache/${msg.id}.png`,
+        name: `${msg.id}.png`
+      }]
+    });
 
-    // // get image as png buffer
-    // return Plotter.getImageBuffer('image/png').then(buffer => {
-    // // as a stream
-    // Plotter.getImageStream('image/png').then(streamResult => {
-    // console.log("WRITING!");
-    // return Plotter.writeImageToFile('image/png', `../cache/${msg.id}.png`).then(async () => {
+    fs.unlinkSync(`./cache/${msg.id}.png`);
 
-  //   // fs.unlinkSync(`../cache/${msg.id}.png`);
-  // });
-
-    // console.log("drawchart");
-    // const buffer = await Plotter.getImageBuffer('image/png');
-    // console.log("got buffer");
-    // const stream = await buffer.getImageStream('image/png');
-    // console.log("got stream");
-    // console.log("writing");
-
-    //await stream.writeImageToFile('image/png', `../cache/${msg.id}.png`);
     chartNode.destroy();
-    Plotter.destroy();
+  },
+
+  getSortedStars(msg, type = 'number') {
+    return new Promise(resolve => {
+      mainModule.db.all('SELECT * FROM starboard WHERE guild_id = ?', msg.guild.id, (err, rows) => {
+        if (!rows)
+          resolve(null);
+        else {
+          const stars = [];
+
+          for (let i = 0; i < rows.length; i++) {
+            utils.debug(rows[i].star_count);
+            stars.push(rows[i].star_count);
+          }
+
+          if (type === 'number')
+            resolve(stars.sort((a, b) => {return b - a}));
+          else
+            resolve(rows.sort((a, b) => {return b.star_count - a.star_count}));
+        }
+      });
+    });
   }
 };

@@ -1,5 +1,6 @@
 const utils = require('../utils/utils.js');
 const CONFIG = require('../config.json');
+const util = require('util');
 module.exports = {
   help: 'Get a users (rich)presence',
   usage: `${CONFIG.prefix}presence @someone`,
@@ -29,17 +30,16 @@ module.exports = {
     } else
       target = msg.author;
 
-    // When you are lazy
-    if (!target.presence.clientStatus) {
-      target.presence.clientStatus = {
-        desktop: 'unknown',
-        mobile: 'unknown',
-        web: 'unknown'
-      };
-    }
-
     if (target.presence.activity && target.presence.activity.state && target.presence.activity.details && target.presence.activity.assets) {
-      const cs = target.presence.clientStatus;
+      let cs = target.presence.clientStatus;
+
+      if (!cs) {
+        cs = {
+          desktop: 'unknown',
+          mobile: 'unknown',
+          web: 'unknown'
+        };
+      }
 
       msg.channel.send({
         embed: {
@@ -82,7 +82,15 @@ module.exports = {
         },
       });
     } else {
-      const cs = target.presence.clientStatus;
+      let cs = target.presence.clientStatus;
+
+      if (!cs) {
+        cs = {
+          desktop: 'unknown',
+          mobile: 'unknown',
+          web: 'unknown'
+        };
+      }
 
       msg.channel.send({
         embed: {

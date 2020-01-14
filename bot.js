@@ -6,6 +6,7 @@ const sqlite3 = require('sqlite3').verbose();
 const schedule = require('node-schedule');
 const WebSocket = require('ws');
 const https = require('https');
+const util = require('util');
 
 const commandHandler = require('./utils/commandHandler.js');
 const utils = require('./utils/utils.js');
@@ -169,7 +170,7 @@ module.exports.commands.reload.main = async (client, msg, hasArgs) => {
 };
 // -- END COMMANDS --
 // -- EVENTS --
-module.exports.client.on('ready', () => {
+module.exports.client.on('ready', async () => {
   loadCommands();
 
   utils.info('WebSocket: Starting web server...');
@@ -190,8 +191,36 @@ module.exports.client.on('ready', () => {
       });
   });
 
-  utils.info('[STARTUP] WebSocket: Done.');
+  utils.info('WebSocket: Done.');
+  utils.info('Setting up server information stores and invite watcher...');
 
+  const guilds = module.exports.client.guilds.array();
+
+  for (let i = 0; i < guilds.length; i++) {
+    utils.debug(`SERVER: ${guilds[i].name}`);
+    let invites = await guilds[i].fetchInvites().catch((err) => utils.error(err));
+
+    if (invites)
+      invites = invites.array();
+
+    if (!module.exports.guilds[guilds[i].id]) {
+      module.exports.guilds[guilds[i].id] = {
+        users: {},
+        joins: {oldest: null, users: [], hitThreshold: false, hitAt: null}
+      };
+    }
+
+    if (!module.exports.guilds[guilds[i].id].invites) {
+      module.exports.guilds[guilds[i].id].invites = {};
+
+      for (let j = 0; j < invites.length; j++) {
+        module.exports.guilds[guilds[i].id].invites[invites[j].code] = {};
+        module.exports.guilds[guilds[i].id].invites[invites[j].code].uses = invites[j].uses;
+      }
+    }
+  }
+
+  utils.info('Server information stores setup.');
   utils.info(`Ready. \nClient: ${module.exports.client.user.tag}\nOwner: ${module.exports.client.users.get(CONFIG.ownerid).tag}\nServers: ${module.exports.client.guilds.array().length}`);
 });
 
@@ -278,6 +307,7 @@ module.exports.client.on('roleDelete',        role                     => loggin
 module.exports.client.on('guildBanAdd',       (guild, user)            => loggingEventHandler.guildBanAdd(guild, user));
 module.exports.client.on('guildBanRemove',    (guild, user)            => loggingEventHandler.guildBanRemove(guild, user));
 module.exports.client.on('messageDeleteBulk', messages                 => loggingEventHandler.messageDeleteBulk(messages));
+module.exports.client.on('voiceStateUpdate',  (oldState, newState)     => loggingEventHandler.voiceStateUpdate(oldState, newState));
 // -- END LOGGING --
 
 //module.exports.client.on('presenceUpdate', (oldMember, newMember) => loggingEventHandler.presenceUpdate(oldMember, newMember));
@@ -295,7 +325,7 @@ module.exports.client.on('disconnected', () => {
 
 process.on('unhandledRejection', (reason, p) => {
   console.dir(p);
-  utils.logError(reason, `F:${reason.fileName} - L:${reason.lineNumber}`);
+  utils.logError(util.inspect(reason).slice(0, 1000), util.inspect(p).slice(0, 1000));
 });
 // -- END EVENTS --
 module.exports.client.login(CONFIG.token);

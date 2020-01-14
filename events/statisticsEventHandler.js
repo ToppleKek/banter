@@ -130,7 +130,7 @@ module.exports = {
         
         console.log("DEBUG: resetDailyUsers:" + totalOnline);
         if (!totalOnline)
-          utils.logError(`ERROR: Failed to find totalOnline channel! totalOnline: ${totalOnline} id: ${json.totalOnline} guild: ${guild.name}`, 'resetDailyUsers');
+          utils.logError(`ERROR: Failed to find totalOnline channel! totalOnline: ${totalOnline} id: ${json.totalOnline} guild: ${arr[i].name}`, 'resetDailyUsers');
         await totalOnline.edit({name: `Gained Users Today: 0`});
 
         mainModule.db.run('UPDATE servers SET today_members = ? WHERE id = ?', 0, arr[i].id, err => {

@@ -137,6 +137,20 @@ module.exports = {
     return null;
   },
 
+  async updateInviteStore(guild) {
+    let invites = await guild.fetchInvites().catch((err) => utils.error(err));
+
+    if (invites)
+      invites = invites.array();
+
+    if (!mainModule.guilds[guild.id].invites)
+      mainModule.guilds[guild.id].invites = {};
+
+    for (let i = 0; i < invites.length; i++) {
+      mainModule.guilds[guild.id].invites[invites[i].code] = {};
+      mainModule.guilds[guild.id].invites[invites[i].code].uses = invites[i].uses;
+    }
+  },
   // TODO: Make all of these one function
   getDBItem(guild, item) {
     return new Promise((resolve, reject) => {
@@ -159,6 +173,18 @@ module.exports = {
       });
 
       resolve(true);
+    });
+  },
+
+  guildExistsInDB(guild) {
+    return new Promise((resolve, reject) => {
+      mainModule.db.get('SELECT * FROM servers WHERE id = ?', guild.id, (err, row) => {
+        module.exports.debug(`guildExistsInDB: err: ${err} row: ${row}`);
+        if (err || !row)
+          resolve(false);
+        else
+          resolve(true);
+      });
     });
   },
 

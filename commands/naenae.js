@@ -5,7 +5,7 @@ module.exports = {
     help: 'naenae (ban) a user from the server',
     usage: `${CONFIG.prefix}naenae @someone reason for ban`,
     main: async (client, msg, hasArgs) => {
-        if (!await utils.checkPermission(msg.author, msg, 'ban') || !await utils.checkPermission(msg.author, msg, 'admin'))
+        if (!await utils.checkPermission(msg.author, msg, 'ban') && !await utils.checkPermission(msg.author, msg, 'admin'))
           return utils.commandError(msg, 'Permission Error', 'You must have permission to ban members to execute this command', module.exports.usage);
 
         if (!hasArgs)

@@ -5,7 +5,7 @@ module.exports = {
     help: 'dabon (kick) a user from the server',
     usage: `${CONFIG.prefix}dabon @someone reason for kick`,
     main: async (client, msg, hasArgs) => {
-        if (!await utils.checkPermission(msg.author, msg, 'kick') || !await utils.checkPermission(msg.author, msg, 'admin'))
+        if (!await utils.checkPermission(msg.author, msg, 'kick') && !await utils.checkPermission(msg.author, msg, 'admin'))
           return utils.commandError(msg, 'Permission Error', 'You must have permission to kick members to execute this command', module.exports.usage);
 
         if (!hasArgs)

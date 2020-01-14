@@ -57,7 +57,7 @@ module.exports = {
 
         const fields = [{
           name: 'Content',
-          value: messageReaction.message.content ? messageReaction.message.content : '***Empty message***',
+          value: messageReaction.message.content ? messageReaction.message.content.slice(0, 1024) : '***Empty message***',
         }];
 
         let isImg;
@@ -107,7 +107,7 @@ module.exports = {
 
           const fields = [{
             name: 'Content',
-            value: messageReaction.message.content ? messageReaction.message.content : '***Empty message***',
+            value: messageReaction.message.content ? messageReaction.message.content.slice(0, 1024) : '***Empty message***',
           }];
 
           let isImg;
@@ -193,7 +193,7 @@ module.exports = {
 
         const fields = [{
           name: 'Content',
-          value: messageReaction.message.content ? messageReaction.message.content : '***Empty message***',
+          value: messageReaction.message.content ? messageReaction.message.content.slice(0, 1024) : '***Empty message***',
         }];
 
         let isImg;

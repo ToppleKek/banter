@@ -2,6 +2,8 @@ const mainModule = require('../bot.js');
 const utils = require('../utils/utils.js');
 const { exec } = require('child_process');
 const configTools = require('../utils/configTools.js');
+const util = require('util');
+
 module.exports = {
   channelCreate: async channel => {
     if (!channel.guild) return;
@@ -66,8 +68,23 @@ module.exports = {
   },
 
   guildMemberAdd: async member => {
-    utils.getActionChannel(member.guild.id, 'log').then(log => {
+    utils.getActionChannel(member.guild.id, 'log').then(async log => {
       if (log) {
+        const rawInvites = await member.guild.fetchInvites().catch((err) => utils.error(err));
+        const oldInvites = utils.cloneObj(mainModule.guilds[member.guild.id].invites);
+        let possibleInvite = 'unknown';
+
+        await utils.updateInviteStore(member.guild);
+
+        for (let invite in mainModule.guilds[member.guild.id].invites) {
+          if (mainModule.guilds[member.guild.id].invites.hasOwnProperty(invite)) {
+            if (oldInvites.hasOwnProperty(invite) && mainModule.guilds[member.guild.id].invites[invite].uses > oldInvites[invite].uses) {
+              possibleInvite = invite;
+              break;
+            }
+          }
+        }
+
         member.guild.channels.get(log).send({
           embed: {
             color: 1571692,
@@ -81,16 +98,19 @@ module.exports = {
             }, {
               name: 'Account creation date',
               value: `${member.user.createdAt.toDateString()} - ${member.user.createdAt.toTimeString()}`,
+            }, {
+              name: 'Possible invite used',
+              value: `Code: \`${possibleInvite}\` Inviter: \`${rawInvites.find(inv => inv.code === possibleInvite).inviter.tag}\``,
             }],
             timestamp: new Date(),
             thumbnail: {
               url: member.user.avatarURL() ? member.user.avatarURL() : 'https://cdn.discordapp.com/attachments/328763359535169547/468903512273715200/damn.png',
             },
           },
-        });
+        }).catch(err => utils.error(err));
       }
     }).catch(err => {
-      utils.warn('Logging disabled during guildMemberAdd');
+      return;
     });
   },
 
@@ -117,7 +137,7 @@ module.exports = {
         });
       }
     }).catch(err => {
-      utils.warn('Logging disabled during guildMemberRemove');
+      return;
     });
   },
 
@@ -146,7 +166,9 @@ module.exports = {
       change = `Old: ${oldRolesChange.join(', ')}\nNew: ${newRolesChange.join(', ')}`;
     }
 
-    if (!change) return utils.warn('Change was empty in guildMemberUpdate!');
+    if (!change)
+      return utils.warn('Change was empty in guildMemberUpdate!');
+
     const embed = {
       color: 1571692,
       title: title,
@@ -165,7 +187,7 @@ module.exports = {
         newMember.guild.channels.get(log).send({embed}).catch(err => utils.error(`Sending message failed in logging ${err}`));
       }
     }).catch(err => {
-      utils.warn('Logging disabled during guildMemberUpdate');
+      return;
     });
   },
 
@@ -241,7 +263,7 @@ module.exports = {
         });
       }
     }).catch(err => {
-      utils.warn('Logging disabled during messageDelete OR message content was blank');
+      return;
     });
   },
 
@@ -344,6 +366,7 @@ module.exports = {
   },
 
   userUpdate: async (oldUser, newUser) => {
+    utils.debug(`userUpdate event: ${util.inspect(oldUser)}\nTO:\n${util.inspect(newUser)}`);
     const fields = [];
     let embed;
     if (oldUser.tag !== newUser.tag && oldUser.avatarURL() !== newUser.avatarURL()) {
@@ -394,7 +417,7 @@ module.exports = {
       };
     }
 
-    const mutualGuilds = utils.getMutualGuilds(newUser);
+    const mutualGuilds = await utils.getMutualGuilds(newUser);
     for (let i = 0; i < mutualGuilds.length; i += 1) {
       utils.getActionChannel(mutualGuilds[i].id, 'log').then(log => {
         mutualGuilds[i].channels.get(log).send(embed);
@@ -417,17 +440,17 @@ module.exports = {
         json = JSON.parse(statChannels);
 
         for (let property in json) {
-          if (json.hasOwnProperty(property)) {
-            if (newChannel.id === json[property])
+          if (json.hasOwnProperty(property) && newChannel.id === json[property])
               return;
-          }
         }
       }
       
       if (ingoredChannels) {
         const arr = ingoredChannels.split(' ');
-        if (arr.includes(newChannel.channel.id)) return;
+        if (arr.includes(newChannel.id))
+          return;
       }
+
       const fields = [];
       if (oldChannel.name !== newChannel.name) {
         fields.push({
@@ -543,6 +566,44 @@ module.exports = {
           timestamp: new Date(),
         },
       });
-    }).catch(err => utils.warn('Logging disabled during guildBanAdd'));;
+    }).catch(err => utils.warn('Logging disabled during guildBanAdd'));
   },
+
+  voiceStateUpdate(oldState, newState) {
+    if (oldState.channel === newState.channel)
+      return;
+
+    let state;
+    let change;
+
+    if (oldState.channel && !newState.channel) {
+      state = 'left';
+      change = `\`${oldState.channel.name}\` --> \`***No channel***\``;
+    } else if (oldState.channel && newState.channel) {
+      state = 'channel changed';
+      change = `\`${oldState.channel.name}\` --> \`${newState.channel.name}\``;
+    } else if (!oldState.channel && newState.channel) {
+      state = 'joined';
+      change = `\`***No channel***\` --> \`${newState.channel.name}\``;
+    }
+
+    utils.getActionChannel(newState.guild.id, 'log').then(log => {
+      newState.guild.channels.get(log).send({
+        embed: {
+          color: 1571692,
+          title: '🗣️ Voice state updated',
+          description: `User: **${newState.member.user.tag}**`,
+          fields: [{
+            name: 'State',
+            value: state,
+          }, {
+            name: 'Channel Change',
+            value: change,
+          }
+          ],
+          timestamp: new Date(),
+        },
+      });
+    }).catch(err => {return});
+  }
 };
